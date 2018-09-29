@@ -16,49 +16,49 @@
 namespace gw {
 
 
-    Renderer::Renderer( const std::shared_ptr<const DataKeeper>& dataKeeper, const std::shared_ptr<const Viewport>& viewport )
-        : dataKeeper_( dataKeeper )
-        , viewport_( viewport )
-    {
-        shaderSimple_.reset( new support::Shader( "shaders/simple.vs", "shaders/simple.fs" ) );
+Renderer::Renderer( const std::shared_ptr<const DataKeeper>& dataKeeper, const std::shared_ptr<const Viewport>& viewport )
+    : dataKeeper_( dataKeeper )
+    , viewport_( viewport )
+{
+    shaderSimple_.reset( new support::Shader( "shaders/simple.vs", "shaders/simple.fs" ) );
 
-        if ( !shaderSimple_->isValid() )
-            throw std::logic_error( "Shader initialization failed!" );
+    if ( !shaderSimple_->isValid() )
+        throw std::logic_error( "Shader initialization failed!" );
 
-        ssProj_ = shaderSimple_->uniformLocation( "proj" );
-        ssColor_ = shaderSimple_->uniformLocation( "colorIn" );
-    }
-
-
-    Renderer::~Renderer()
-    {
-    }
+    ssProj_ = shaderSimple_->uniformLocation( "proj" );
+    ssColor_ = shaderSimple_->uniformLocation( "colorIn" );
+}
 
 
-    void Renderer::render()
-    {
-        glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+Renderer::~Renderer()
+{
+}
 
-        glm::mat4 proj = glm::ortho( -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 100.0f );
 
-        shaderSimple_->use();
-        glUniformMatrix4fv( ssProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
+void Renderer::render()
+{
+    glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        {   // Simple Triangle
-            glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
+    glm::mat4 proj = glm::ortho( -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 100.0f );
 
-            std::tuple<GLuint, std::size_t> params = dataKeeper_->simpleTriangle();
-            const auto vao = std::get<0>( params );
-            const auto num = std::get<1>( params );
+    shaderSimple_->use();
+    glUniformMatrix4fv( ssProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
 
-            if ( num > 0 )
-            {
-                glBindVertexArray( vao );
-                glDrawArrays( GL_TRIANGLES, 0, num );
-            }
+    {   // Simple Triangle
+        glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
+
+        std::tuple<GLuint, std::size_t> params = dataKeeper_->simpleTriangle();
+        const auto vao = std::get<0>( params );
+        const auto num = std::get<1>( params );
+
+        if ( num > 0 )
+        {
+            glBindVertexArray( vao );
+            glDrawArrays( GL_TRIANGLES, 0, num );
         }
     }
+}
 
 
 }

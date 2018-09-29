@@ -10,73 +10,73 @@ namespace gw
 {
 
 
-    struct GlobeViewer::Impl
-    {
-    public:
-        Impl();
-        ~Impl();
+struct GlobeViewer::Impl
+{
+public:
+    Impl();
+    ~Impl();
 
-        bool initGl() const;
-        void initData();
+    bool initGl() const;
+    void initData();
 
-        bool valid;
-        std::shared_ptr<DataKeeper> dataKeeper;
-        std::shared_ptr<Viewport> viewport;
-        std::unique_ptr<Renderer> renderer;
-    };
-
-
-    GlobeViewer::Impl::Impl()
-        : valid( false )
-    {
-        if ( !initGl() )
-            throw std::logic_error( "OpenGL initialization failed!" );
-
-        initData();
-    }
+    bool valid;
+    std::shared_ptr<DataKeeper> dataKeeper;
+    std::shared_ptr<Viewport> viewport;
+    std::unique_ptr<Renderer> renderer;
+};
 
 
-    GlobeViewer::Impl::~Impl()
-    {
-    }
+GlobeViewer::Impl::Impl()
+    : valid( false )
+{
+    if ( !initGl() )
+        throw std::logic_error( "OpenGL initialization failed!" );
+
+    initData();
+}
 
 
-    bool GlobeViewer::Impl::initGl() const
-    {
-        return gladLoadGL();
-    }
+GlobeViewer::Impl::~Impl()
+{
+}
 
 
-    void GlobeViewer::Impl::initData()
-    {
-        dataKeeper.reset( new DataKeeper() );
-        viewport.reset( new Viewport() );
-        renderer.reset( new Renderer( dataKeeper, viewport ) );
-        valid = true;
-    }
-    
-
-    GlobeViewer::GlobeViewer()
-        : impl_( new GlobeViewer::Impl )
-    {
-    }
+bool GlobeViewer::Impl::initGl() const
+{
+    return gladLoadGL();
+}
 
 
-    GlobeViewer::~GlobeViewer()
-    {
-    }
+void GlobeViewer::Impl::initData()
+{
+    dataKeeper.reset( new DataKeeper() );
+    viewport.reset( new Viewport() );
+    renderer.reset( new Renderer( dataKeeper, viewport ) );
+    valid = true;
+}
 
 
-    bool GlobeViewer::validSetup() const
-    {
-        return impl_->valid;
-    }
+GlobeViewer::GlobeViewer()
+    : impl_( new GlobeViewer::Impl )
+{
+}
 
 
-    void GlobeViewer::render()
-    {
-        impl_->renderer->render();
-    }
+GlobeViewer::~GlobeViewer()
+{
+}
+
+
+bool GlobeViewer::validSetup() const
+{
+    return impl_->valid;
+}
+
+
+void GlobeViewer::render()
+{
+    impl_->renderer->render();
+}
 
 
 }
