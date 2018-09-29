@@ -9,7 +9,7 @@
 
 GLFWwindow* setupWindow( const std::string& title );
 
-std::unique_ptr<gw::GlobeViewer> globalViewer;
+std::unique_ptr<gv::GlobeViewer> globalViewer;
 
 
 int main( int argc, char** argv )
@@ -19,7 +19,7 @@ int main( int argc, char** argv )
     if ( !window )
         return -1;
 
-    globalViewer.reset( new gw::GlobeViewer() );
+    globalViewer.reset( new gv::GlobeViewer() );
 
     if ( !globalViewer->validSetup() )
         return -1;

@@ -5,7 +5,7 @@
 #include "LoadGL.h"
 
 
-namespace gw {
+namespace gv {
 
 
 class DataKeeper

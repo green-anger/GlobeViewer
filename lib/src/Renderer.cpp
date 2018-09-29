@@ -13,7 +13,7 @@
 #include "Viewport.h"
 
 
-namespace gw {
+namespace gv {
 
 
 Renderer::Renderer( const std::shared_ptr<const DataKeeper>& dataKeeper, const std::shared_ptr<const Viewport>& viewport )

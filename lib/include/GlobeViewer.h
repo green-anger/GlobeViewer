@@ -3,7 +3,7 @@
 #include <memory>
 
 
-namespace gw {
+namespace gv {
 
 
 class GlobeViewer

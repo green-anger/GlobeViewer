@@ -7,7 +7,7 @@
 #include <Shader.h>
 
 
-namespace gw {
+namespace gv {
 namespace support {
 
 
