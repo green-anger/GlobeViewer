@@ -13,14 +13,18 @@ set( SOURCES_SUPP "${SOURCES_ROOT}/support" )
 
 set( HDRS
     ${HEADERS_ROOT}/GlobeViewer.h
+    ${HEADERS_IMPL}/DataKeeper.h
     ${HEADERS_IMPL}/Renderer.h
+    ${HEADERS_IMPL}/Viewport.h
     ${HEADERS_SUPP}/LoadGL.h
     ${HEADERS_SUPP}/Shader.h
 )
 
 set( SRCS
     ${SOURCES_ROOT}/GlobeViewer.cpp
+    ${SOURCES_ROOT}/DataKeeper.cpp
     ${SOURCES_ROOT}/Renderer.cpp
+    ${SOURCES_ROOT}/Viewport.cpp
     ${SOURCES_SUPP}/glad/glad.c
     ${SOURCES_SUPP}/Shader.cpp
 )

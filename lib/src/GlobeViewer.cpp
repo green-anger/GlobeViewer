@@ -1,7 +1,9 @@
 #include <stdexcept>
 
+#include "DataKeeper.h"
 #include "GlobeViewer.h"
 #include "Renderer.h"
+#include "Viewport.h"
 
 
 namespace gw
@@ -18,6 +20,8 @@ namespace gw
         void initData();
 
         bool valid;
+        std::shared_ptr<DataKeeper> dataKeeper;
+        std::shared_ptr<Viewport> viewport;
         std::unique_ptr<Renderer> renderer;
     };
 
@@ -45,7 +49,9 @@ namespace gw
 
     void GlobeViewer::Impl::initData()
     {
-        renderer.reset( new Renderer() );
+        dataKeeper.reset( new DataKeeper() );
+        viewport.reset( new Viewport() );
+        renderer.reset( new Renderer( dataKeeper, viewport ) );
         valid = true;
     }
     
