@@ -32,9 +32,6 @@ Viewport::~Viewport()
 
 void Viewport::resize( int w, int h )
 {
-    std::cout << "Before resize\n";
-    testPrint();
-
     pixelW_ = w;
     pixelH_ = h;
     const float prevUnitW = unitW_;
@@ -45,9 +42,6 @@ void Viewport::resize( int w, int h )
     unitY_ -= ( unitH_ - prevUnitH ) / 2;
     setProjection();
     glViewport( 0, 0, w, h );
-
-    std::cout << "After resize\n";
-    testPrint();
 }
 
 

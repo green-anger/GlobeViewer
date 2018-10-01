@@ -5,6 +5,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include "support/FpsCounter.h"
 #include "GlobeViewer.h"
 
 
@@ -46,8 +47,17 @@ int main( int argc, char** argv )
     glfwSetMouseButtonCallback( window, mouseButtonCallback );
     glfwSetKeyCallback( window, keyCallback );
 
+    gv::FpsCounter fpsC;
+
     while ( !glfwWindowShouldClose( window ) )
     {
+        auto fps = fpsC.addFrame();
+
+        if ( fps > 0 )
+        {
+            std::cout << "FPS: " << fps << std::endl;
+        }
+
         glfwPollEvents();
         globalViewer->render();
         glfwSwapBuffers( window );
@@ -71,7 +81,6 @@ void windowFocusCallback( GLFWwindow* window, int focused )
 
 void framebufferSizeCallback( GLFWwindow* window, int width, int height )
 {
-    std::cout << "GLFW resized to " << width << ":" << height << std::endl;
     globalViewer->resize( width, height );
 }
 
@@ -145,8 +154,6 @@ std::tuple<GLFWwindow*, int, int> setupWindow( const std::string& title )
 
     auto monitor = glfwGetPrimaryMonitor();
     auto mode = glfwGetVideoMode( monitor );
-
-    std::cout << mode->width << ":" << mode->height << std::endl;
 
     float ratio = 0.8f;
     const auto width = static_cast< int >( ratio * mode->width );
