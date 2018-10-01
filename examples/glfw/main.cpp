@@ -116,6 +116,23 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
     {
         glfwSetWindowShouldClose( window, GLFW_TRUE );
     }
+
+    if ( !drag )
+    {
+        int xoff = 0;
+        int yoff = 0;
+
+        const int mod = GLFW_MOD_SHIFT == mode ? 10 : 1;
+        xoff += mod * ( glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS ? 1 : 0 );
+        xoff -= mod * ( glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS ? 1 : 0 );
+        yoff += mod * ( glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS ? 1 : 0 );
+        yoff -= mod * ( glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS ? 1 : 0 );
+
+        if ( xoff != 0 || yoff != 0 )
+        {
+            globalViewer->move( xoff, yoff );
+        }
+    }
 }
 
 
