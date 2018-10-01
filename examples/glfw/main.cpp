@@ -12,6 +12,7 @@ void windowFocusCallback( GLFWwindow* window, int focused );
 void framebufferSizeCallback( GLFWwindow* window, int width, int height );
 void mouseCallback( GLFWwindow* window, double xpos, double ypos );
 void mouseButtonCallback( GLFWwindow* window, int button, int action, int mods );
+void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mode );
 
 std::tuple<GLFWwindow*, int, int> setupWindow( const std::string& title );
 
@@ -43,6 +44,7 @@ int main( int argc, char** argv )
     glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
     glfwSetCursorPosCallback( window, mouseCallback );
     glfwSetMouseButtonCallback( window, mouseButtonCallback );
+    glfwSetKeyCallback( window, keyCallback );
 
     while ( !glfwWindowShouldClose( window ) )
     {
@@ -104,6 +106,15 @@ void mouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
     else if ( GLFW_MOUSE_BUTTON_1 == button && GLFW_RELEASE == action )
     {
         drag = false;
+    }
+}
+
+
+void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mode )
+{
+    if ( GLFW_KEY_ESCAPE == key && GLFW_PRESS == action )
+    {
+        glfwSetWindowShouldClose( window, GLFW_TRUE );
     }
 }
 
