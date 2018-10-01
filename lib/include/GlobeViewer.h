@@ -15,6 +15,9 @@ public:
     bool validSetup() const;
     void render();
 
+    void resize( int w, int h );
+    void move( int x, int y );
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

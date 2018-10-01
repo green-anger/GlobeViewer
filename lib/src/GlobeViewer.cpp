@@ -79,4 +79,16 @@ void GlobeViewer::render()
 }
 
 
+void GlobeViewer::resize( int w, int h )
+{
+    impl_->viewport->resize( w, h );
+}
+
+
+void GlobeViewer::move( int x, int y )
+{
+    impl_->viewport->move( x, y );
+}
+
+
 }
