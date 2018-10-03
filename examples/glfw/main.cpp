@@ -133,6 +133,10 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
     {
         glfwSetWindowShouldClose( window, GLFW_TRUE );
     }
+    else if ( GLFW_KEY_C == key && GLFW_PRESS == action )
+    {
+        globalViewer->centerView();
+    }
 
     if ( !drag )
     {

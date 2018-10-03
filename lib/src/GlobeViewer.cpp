@@ -97,4 +97,10 @@ void GlobeViewer::zoom( int steps )
 }
 
 
+void GlobeViewer::centerView()
+{
+    impl_->viewport->center();
+}
+
+
 }

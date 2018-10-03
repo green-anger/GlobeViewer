@@ -17,6 +17,7 @@ public:
     void resize( int w, int h );
     void move( int x, int y );
     void zoom( int steps );
+    void center();
 
     glm::mat4 projection() const;
 

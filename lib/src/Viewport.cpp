@@ -78,6 +78,13 @@ void Viewport::zoom( int steps )
 }
 
 
+void Viewport::center()
+{
+    panX_ = panY_ = 0;
+    setProjection();
+}
+
+
 glm::mat4 Viewport::projection() const
 {
     return proj_;

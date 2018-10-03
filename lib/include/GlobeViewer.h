@@ -18,6 +18,7 @@ public:
     void resize( int w, int h );
     void move( int x, int y );
     void zoom( int steps );
+    void centerView();
 
 private:
     struct Impl;
