@@ -91,4 +91,10 @@ void GlobeViewer::move( int x, int y )
 }
 
 
+void GlobeViewer::zoom( int steps )
+{
+    impl_->viewport->zoom( steps );
+}
+
+
 }

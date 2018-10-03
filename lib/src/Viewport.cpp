@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#include <algorithm>
+#include <iostream>
 
 #include <Viewport.h>
 
@@ -16,7 +17,10 @@ Viewport::Viewport()
     , unitH_( 0.0f )
     , panX_( 0.0f )
     , panY_( 0.0f )
+    , minUnitInPixel_( 0.0001f )
+    , maxUnitInPixel_( 0.1f )
     , unitInPixel_( 0.005f )
+    , zoomStep_( 0.001f )
     , zNear_( 0.0f )
     , zFar_( 100.0f )
     , zCamera_( zFar_ )
@@ -34,8 +38,8 @@ void Viewport::resize( int w, int h )
 {
     pixelW_ = w;
     pixelH_ = h;
-    const float prevUnitW = unitW_;
-    const float prevUnitH = unitH_;
+    const auto prevUnitW = unitW_;
+    const auto prevUnitH = unitH_;
     unitW_ = unitInPixel_ * pixelW_;
     unitH_ = unitInPixel_ * pixelH_;
     unitX_ -= ( unitW_ - prevUnitW ) / 2;
@@ -49,6 +53,27 @@ void Viewport::move( int x, int y )
 {
     panX_ -= unitInPixel_ * x;
     panY_ -= unitInPixel_ * y;
+    setProjection();
+}
+
+
+void Viewport::zoom( int steps )
+{
+    const int sign = steps > 0 ? 1 : -1;
+
+    for ( int i = 0; i < std::abs( steps ); ++i )
+    {
+        unitInPixel_ -= zoomStep_ * sign;
+    }
+
+    unitInPixel_ = std::min( unitInPixel_, maxUnitInPixel_ );
+    unitInPixel_ = std::max( unitInPixel_, minUnitInPixel_ );
+    const auto prevUnitW = unitW_;
+    const auto prevUnitH = unitH_;
+    unitW_ = unitInPixel_ * pixelW_;
+    unitH_ = unitInPixel_ * pixelH_;
+    unitX_ -= ( unitW_ - prevUnitW ) / 2;
+    unitY_ -= ( unitH_ - prevUnitH ) / 2;
     setProjection();
 }
 

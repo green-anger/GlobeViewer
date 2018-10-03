@@ -16,6 +16,7 @@ public:
 
     void resize( int w, int h );
     void move( int x, int y );
+    void zoom( int steps );
 
     glm::mat4 projection() const;
 
@@ -33,6 +34,10 @@ private:
     float panY_;    //!< Pannig by coordinate y (in gl units)
 
     float unitInPixel_;     //!< gl units in one pixel
+
+    const float minUnitInPixel_;    //!< minimum value of unitInPixel_
+    const float maxUnitInPixel_;    //!< maximum value of unitInPixel_
+    const float zoomStep_;          //!< change of unitInPixel_ in one step
 
     const GLfloat zNear_;
     const GLfloat zFar_;

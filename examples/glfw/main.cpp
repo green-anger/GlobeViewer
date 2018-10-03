@@ -13,6 +13,7 @@ void windowFocusCallback( GLFWwindow* window, int focused );
 void framebufferSizeCallback( GLFWwindow* window, int width, int height );
 void mouseCallback( GLFWwindow* window, double xpos, double ypos );
 void mouseButtonCallback( GLFWwindow* window, int button, int action, int mods );
+void scrollCallback( GLFWwindow* window, double xpos, double ypos );
 void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mode );
 
 std::tuple<GLFWwindow*, int, int> setupWindow( const std::string& title );
@@ -45,6 +46,7 @@ int main( int argc, char** argv )
     glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
     glfwSetCursorPosCallback( window, mouseCallback );
     glfwSetMouseButtonCallback( window, mouseButtonCallback );
+    glfwSetScrollCallback( window, scrollCallback );
     glfwSetKeyCallback( window, keyCallback );
 
     gv::FpsCounter fpsC;
@@ -116,6 +118,12 @@ void mouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
     {
         drag = false;
     }
+}
+
+
+void scrollCallback( GLFWwindow* window, double xpos, double ypos )
+{
+    globalViewer->zoom( ypos );
 }
 
 
