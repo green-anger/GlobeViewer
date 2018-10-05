@@ -4,7 +4,8 @@
 //#include <glm/gtc/matrix_transform.hpp>
 //#include <glm/gtc/type_ptr.hpp>
 
-#include <DataKeeper.h>
+#include "DataKeeper.h"
+#include "Projector.h"
 
 
 namespace gv
@@ -12,8 +13,9 @@ namespace gv
 
 
 DataKeeper::DataKeeper()
+    : projector_( new Projector )
 {
-    const GLfloat side = 1.0f;
+    const GLfloat side = 100.0f;
     const std::vector<GLfloat> stVerts =
     {
         -side, -side,

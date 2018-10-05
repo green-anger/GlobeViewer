@@ -2,6 +2,7 @@ set( lib globe_viewer )
 
 find_package( OpenGL REQUIRED )
 find_package( glm REQUIRED )
+find_package( PROJ4 5.0.0 REQUIRED )
 
 set( HEADERS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 set( HEADERS_IMPL "${HEADERS_ROOT}/impl" )
@@ -14,6 +15,7 @@ set( SOURCES_SUPP "${SOURCES_ROOT}/support" )
 set( HDRS
     ${HEADERS_ROOT}/GlobeViewer.h
     ${HEADERS_IMPL}/DataKeeper.h
+    ${HEADERS_IMPL}/Projector.h
     ${HEADERS_IMPL}/Renderer.h
     ${HEADERS_IMPL}/Viewport.h
     ${HEADERS_SUPP}/FpsCounter.h
@@ -24,6 +26,7 @@ set( HDRS
 set( SRCS
     ${SOURCES_ROOT}/GlobeViewer.cpp
     ${SOURCES_ROOT}/DataKeeper.cpp
+    ${SOURCES_ROOT}/Projector.cpp
     ${SOURCES_ROOT}/Renderer.cpp
     ${SOURCES_ROOT}/Viewport.cpp
     ${SOURCES_SUPP}/glad/glad.c
@@ -37,12 +40,14 @@ include_directories(
     ${HEADERS_SUPP}
     ${HEADERS_GLAD}
     ${GLM_INCLUDE_DIRS}
+    ${PROJ4_INCLUDE_DIRS}
 )
 
 add_library( ${lib} ${SRCS} ${HDRS} )
 
 target_link_libraries( ${lib}
     ${OPENGL_LIBRARIES}
+    ${PROJ4_LIBRARIES}
 )
 
 if ( MSVC )

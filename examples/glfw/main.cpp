@@ -55,10 +55,10 @@ int main( int argc, char** argv )
     {
         auto fps = fpsC.addFrame();
 
-        if ( fps > 0 )
-        {
-            std::cout << "FPS: " << fps << std::endl;
-        }
+        //if ( fps > 0 )
+        //{
+        //    std::cout << "FPS: " << fps << std::endl;
+        //}
 
         glfwPollEvents();
         globalViewer->render();
@@ -123,7 +123,7 @@ void mouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
 
 void scrollCallback( GLFWwindow* window, double xpos, double ypos )
 {
-    globalViewer->zoom( ypos );
+    globalViewer->zoom( static_cast<int>( ypos ) );
 }
 
 

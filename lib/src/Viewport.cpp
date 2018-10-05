@@ -1,7 +1,7 @@
 ﻿#include <algorithm>
 #include <iostream>
 
-#include <Viewport.h>
+#include "Viewport.h"
 
 
 namespace gv
@@ -17,15 +17,24 @@ Viewport::Viewport()
     , unitH_( 0.0f )
     , panX_( 0.0f )
     , panY_( 0.0f )
-    , minUnitInPixel_( 0.0001f )
-    , maxUnitInPixel_( 0.1f )
-    , unitInPixel_( 0.005f )
-    , zoomStep_( 0.001f )
+    , unitInMeter_( 0.001f ) /* const */
+    , meterInPixel_( 1000.0f )
+    , unitInPixel_( meterInPixel_ * unitInMeter_ )
+    , maxOrthoRad_( 6378140.0f ) /* const */
+    , maxLen_( maxOrthoRad_ * 2 * 1.2f ) /* const */
+    , minUnitInPixel_( 1.0f ) /* const */
+    , maxUnitInPixel_( maxLen_ / 1080 /*pixels*/ * unitInMeter_ ) /* const */
+    , zoomStep_( 1.0f ) /* const */
     , zNear_( 0.0f )
     , zFar_( 100.0f )
     , zCamera_( zFar_ )
     , proj_( glm::ortho( -1.0f, 1.0f, -1.0f, 1.0f, zNear_, zFar_ ) )
 {
+    std::cout << "Viewport\n"
+        << "unitInPixel_ = " << unitInPixel_ << "\n"
+        << "maxLen_ = " << maxLen_ << "\n"
+        << "maxUnitInPixel_ = " << maxUnitInPixel_ << "\n"
+        << std::endl;
 }
 
 
