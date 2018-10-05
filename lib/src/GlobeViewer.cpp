@@ -1,3 +1,4 @@
+#include <functional>
 #include <stdexcept>
 
 #include "DataKeeper.h"
@@ -52,6 +53,11 @@ void GlobeViewer::Impl::initData()
     dataKeeper.reset( new DataKeeper() );
     viewport.reset( new Viewport() );
     renderer.reset( new Renderer( dataKeeper, viewport ) );
+
+    dataKeeper->registerUnitInMeterGrabber( std::bind( &Viewport::unitInMeter, viewport ) );
+
+    dataKeeper->init();
+
     valid = true;
 }
 

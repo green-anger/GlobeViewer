@@ -58,6 +58,21 @@ void Renderer::render()
             glDrawArrays( GL_TRIANGLES, 0, num );
         }
     }
+
+    {   // Wire Globe
+        glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 1.0f, 0.0f, 1.0f ) ) );
+
+        std::tuple<GLuint, std::size_t> params = dataKeeper_->wireGlobe();
+        const auto vao = std::get<0>( params );
+        const auto num = std::get<1>( params );
+
+        if ( num > 0 )
+        {
+            glLineWidth( 1.0f );
+            glBindVertexArray( vao );
+            glDrawArrays( GL_LINES, 0, num );
+        }
+    }
 }
 
 

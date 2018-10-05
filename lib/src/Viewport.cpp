@@ -94,6 +94,12 @@ void Viewport::center()
 }
 
 
+float Viewport::unitInMeter() const
+{
+    return unitInMeter_;
+}
+
+
 glm::mat4 Viewport::projection() const
 {
     return proj_;

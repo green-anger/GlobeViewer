@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <functional>
 #include <memory>
 #include <tuple>
 
@@ -18,14 +19,28 @@ public:
     DataKeeper();
     ~DataKeeper();
 
+    void init();
+
+    void registerUnitInMeterGrabber( const std::function<float()>& );
+
     std::tuple<GLuint, std::size_t> simpleTriangle() const;
+    std::tuple<GLuint, std::size_t> wireGlobe() const;
 
 private:
+    void composeWireGlobe();
+
+    std::function<float()> unitInMeterGrabber_;
+    float unitInMeter_;
+
     std::shared_ptr<Projector> projector_;
 
     GLuint vaoST_;  //!< vao for Simple Triangle
     GLuint vboST_;  //!< vbo for Simple Triangle
     GLuint numST_;  //!< number of vertices for Simple Triangle
+
+    GLuint vaoWire_;    //!< vao for wire-frame model of the Globe
+    GLuint vboWire_;    //!< vbo for wire-frame model of the Globe
+    GLuint numWire_;    //!< number of vertices for wire-frame model of the Globe
 };
 
 

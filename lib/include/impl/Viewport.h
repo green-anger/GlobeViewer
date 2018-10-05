@@ -19,6 +19,8 @@ public:
     void zoom( int steps );
     void center();
 
+    float unitInMeter() const;
+
     glm::mat4 projection() const;
 
 private:
