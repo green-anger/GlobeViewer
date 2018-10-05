@@ -97,17 +97,21 @@ void DataKeeper::composeWireGlobe()
     static const float endLat = 80.0f;
     static const int lons = std::round( ( endLon - begLon ) / gapLon + 1 );
     static const int lats = std::round( ( endLat - begLat ) / gapLat + 1 );
+    static const float drawGapLon = 1.0f;
+    static const float drawGapLat = 1.0f;
+    static const int drawLons = std::round( ( endLon - begLon ) / drawGapLon + 1 );
+    static const int drawLats = std::round( ( endLat - begLat ) / drawGapLat + 1 );
 
     std::vector<GLfloat> vec;
 
     for ( int iLat = 0; iLat < lats; ++iLat )
     {
-        for ( int iLon = 0; iLon < lons - 1; ++iLon )
+        for ( int iLon = 0; iLon < drawLons - 1; ++iLon )
         {
             double x1;
             double y1;
 
-            if ( !projector_->projectFwd( begLon + iLon * gapLon, begLat + iLat * gapLat, x1, y1 ) )
+            if ( !projector_->projectFwd( begLon + iLon * drawGapLon, begLat + iLat * gapLat, x1, y1 ) )
             {
                 continue;
             }
@@ -115,7 +119,7 @@ void DataKeeper::composeWireGlobe()
             double x2;
             double y2;
 
-            if ( !projector_->projectFwd( begLon + ( iLon + 1 )* gapLon, begLat + iLat * gapLat, x2, y2 ) )
+            if ( !projector_->projectFwd( begLon + ( iLon + 1 )* drawGapLon, begLat + iLat * gapLat, x2, y2 ) )
             {
                 continue;
             }
@@ -129,12 +133,12 @@ void DataKeeper::composeWireGlobe()
 
     for ( int iLon = 0; iLon < lons; ++iLon )
     {
-        for ( int iLat = 0; iLat < lats - 1; ++iLat )
+        for ( int iLat = 0; iLat < drawLats - 1; ++iLat )
         {
             double x1;
             double y1;
 
-            if ( !projector_->projectFwd( begLon + iLon * gapLon, begLat + iLat * gapLat, x1, y1 ) )
+            if ( !projector_->projectFwd( begLon + iLon * gapLon, begLat + iLat * drawGapLat, x1, y1 ) )
             {
                 continue;
             }
@@ -142,7 +146,7 @@ void DataKeeper::composeWireGlobe()
             double x2;
             double y2;
 
-            if ( !projector_->projectFwd( begLon + iLon * gapLon, begLat + ( iLat + 1 )* gapLat, x2, y2 ) )
+            if ( !projector_->projectFwd( begLon + iLon * gapLon, begLat + ( iLat + 1 )* drawGapLat, x2, y2 ) )
             {
                 continue;
             }
