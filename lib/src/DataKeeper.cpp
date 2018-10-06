@@ -18,6 +18,8 @@ DataKeeper::DataKeeper()
     : projector_( new Projector )
     , numST_( 0 )
     , numWire_( 0 )
+    , rotatedLon_( 0.0 )
+    , rotatedLat_( 0.0 )
 {
     const GLfloat side = 100.0f;
     const std::vector<GLfloat> stVerts =
@@ -65,13 +67,84 @@ void DataKeeper::init()
         unitInMeter_ = unitInMeterGrabber_();
     }
 
+    if ( !meterInPixelGrabber_ )
+    {
+        throw std::logic_error( "Cannot initialize DataKeeper. Not meterInPixelGrabber defined!" );
+    }
+
     composeWireGlobe();
+}
+
+
+void DataKeeper::rotateGlobe( int pixelX, int pixelY )
+{
+    float meterInPixel = meterInPixelGrabber_();
+    static const double stepLon = 0.05;
+    static const double stepLat = 0.05;
+    double lon;
+    double lat;
+
+    if ( projector_->projectInv( pixelX * meterInPixel, pixelY * meterInPixel, lon, lat ) )
+    {
+        const auto projLon = projector_->projLon();
+        const int signLon = pixelX < 0 ? 1 : -1;
+        double diffLon = abs( lon - projLon );
+        
+        if ( 180.0 < diffLon )
+        {
+            diffLon = 360.0 - diffLon;
+        }
+
+        rotatedLon_ += signLon * diffLon;
+        const double closeLon = rotatedLon_ > 0.0
+            ? floor( rotatedLon_ / stepLon ) * stepLon
+            : ceil( rotatedLon_ / stepLon ) * stepLon;
+
+        const auto projLat = projector_->projLat();
+        const int signLat = pixelY < 0 ? 1 : -1;
+        double diffLat = abs( lat - projLat );
+
+        rotatedLat_ += signLat * diffLat;
+        const double closeLat = rotatedLat_ > 0.0
+            ? floor( rotatedLat_ / stepLat ) * stepLat
+            : ceil( rotatedLat_ / stepLat ) * stepLat;
+
+        double newLon = lon;
+        double newLat = lat;
+        bool rotate = false;
+
+        if ( stepLon <= abs( closeLon ) )
+        {
+            newLon = projLon + closeLon;
+            rotatedLon_ = 0.0;
+            rotate = true;
+        }
+
+        if ( stepLat <= abs( closeLat ) )
+        {
+            newLat = projLat + closeLat;
+            rotatedLat_ = 0.0;
+            rotate = true;
+        }
+
+        if ( rotate )
+        {
+            projector_->setProjectionAt( newLon, newLat );
+            composeWireGlobe();
+        }
+    }
 }
 
 
 void DataKeeper::registerUnitInMeterGrabber( const std::function<float()>& func )
 {
     unitInMeterGrabber_ = func;
+}
+
+
+void DataKeeper::registerMeterInPixelGrabber( const std::function<float()>& func )
+{
+    meterInPixelGrabber_ = func;
 }
 
 

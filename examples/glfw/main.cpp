@@ -20,6 +20,7 @@ std::tuple<GLFWwindow*, int, int> setupWindow( const std::string& title );
 
 std::unique_ptr<gv::GlobeViewer> globalViewer;
 bool drag = false;
+bool shift = false;
 bool firstClick = true;
 double lastX;
 double lastY;
@@ -103,7 +104,14 @@ void mouseCallback( GLFWwindow* window, double xpos, double ypos )
 
     if ( drag )
     {
-        globalViewer->move( static_cast<int>( xoff ), static_cast<int>( yoff ) );
+        if ( shift )
+        {
+            globalViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+        }
+        else
+        {
+            globalViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+        }
     }
 }
 
@@ -154,6 +162,8 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
             globalViewer->move( xoff, yoff );
         }
     }
+
+    shift = ( GLFW_MOD_SHIFT == mode );
 }
 
 

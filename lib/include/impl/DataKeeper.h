@@ -20,8 +20,10 @@ public:
     ~DataKeeper();
 
     void init();
+    void rotateGlobe( int pixelX, int pixelY );
 
     void registerUnitInMeterGrabber( const std::function<float()>& );
+    void registerMeterInPixelGrabber( const std::function<float()>& );
 
     std::tuple<GLuint, std::size_t> simpleTriangle() const;
     std::tuple<GLuint, std::size_t> wireGlobe() const;
@@ -30,6 +32,7 @@ private:
     void composeWireGlobe();
 
     std::function<float()> unitInMeterGrabber_;
+    std::function<float()> meterInPixelGrabber_;
     float unitInMeter_;
 
     std::shared_ptr<Projector> projector_;
@@ -41,6 +44,9 @@ private:
     GLuint vaoWire_;    //!< vao for wire-frame model of the Globe
     GLuint vboWire_;    //!< vbo for wire-frame model of the Globe
     GLuint numWire_;    //!< number of vertices for wire-frame model of the Globe
+
+    double rotatedLon_;
+    double rotatedLat_;
 };
 
 

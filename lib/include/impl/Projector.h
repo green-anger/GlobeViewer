@@ -12,6 +12,8 @@ public:
     Projector();
     ~Projector();
 
+    void setProjectionAt( double lon, double lat );
+
     bool projectFwd( double lon, double lat, double& x, double& y ) const;
     bool projectInv( double x, double y, double& lon, double& lat ) const;
     double projLon() const;

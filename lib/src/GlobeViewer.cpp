@@ -55,6 +55,7 @@ void GlobeViewer::Impl::initData()
     renderer.reset( new Renderer( dataKeeper, viewport ) );
 
     dataKeeper->registerUnitInMeterGrabber( std::bind( &Viewport::unitInMeter, viewport ) );
+    dataKeeper->registerMeterInPixelGrabber( std::bind( &Viewport::meterInPixel, viewport ) );
 
     dataKeeper->init();
 
@@ -106,6 +107,12 @@ void GlobeViewer::zoom( int steps )
 void GlobeViewer::centerView()
 {
     impl_->viewport->center();
+}
+
+
+void GlobeViewer::rotate( int x, int y )
+{
+    impl_->dataKeeper->rotateGlobe( x, y );
 }
 
 

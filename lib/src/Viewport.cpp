@@ -30,11 +30,6 @@ Viewport::Viewport()
     , zCamera_( zFar_ )
     , proj_( glm::ortho( -1.0f, 1.0f, -1.0f, 1.0f, zNear_, zFar_ ) )
 {
-    std::cout << "Viewport\n"
-        << "unitInPixel_ = " << unitInPixel_ << "\n"
-        << "maxLen_ = " << maxLen_ << "\n"
-        << "maxUnitInPixel_ = " << maxUnitInPixel_ << "\n"
-        << std::endl;
 }
 
 
@@ -77,6 +72,7 @@ void Viewport::zoom( int steps )
 
     unitInPixel_ = std::min( unitInPixel_, maxUnitInPixel_ );
     unitInPixel_ = std::max( unitInPixel_, minUnitInPixel_ );
+    meterInPixel_ = unitInPixel_ / unitInMeter_;
     const auto prevUnitW = unitW_;
     const auto prevUnitH = unitH_;
     unitW_ = unitInPixel_ * pixelW_;
@@ -97,6 +93,12 @@ void Viewport::center()
 float Viewport::unitInMeter() const
 {
     return unitInMeter_;
+}
+
+
+float Viewport::meterInPixel() const
+{
+    return meterInPixel_;
 }
 
 

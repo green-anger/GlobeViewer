@@ -19,6 +19,7 @@ public:
     void move( int x, int y );
     void zoom( int steps );
     void centerView();
+    void rotate( int x, int y );
 
 private:
     struct Impl;

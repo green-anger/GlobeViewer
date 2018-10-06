@@ -20,6 +20,7 @@ public:
     void center();
 
     float unitInMeter() const;
+    float meterInPixel() const;
 
     glm::mat4 projection() const;
 
