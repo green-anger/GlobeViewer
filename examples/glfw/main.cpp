@@ -56,10 +56,10 @@ int main( int argc, char** argv )
     {
         auto fps = fpsC.addFrame();
 
-        //if ( fps > 0 )
-        //{
-        //    std::cout << "FPS: " << fps << std::endl;
-        //}
+        if ( fps > 0 )
+        {
+            std::cout << "FPS: " << fps << std::endl;
+        }
 
         glfwPollEvents();
         globalViewer->render();
@@ -68,6 +68,8 @@ int main( int argc, char** argv )
 
     glfwDestroyWindow( window );
     glfwTerminate();
+
+    globalViewer->cleanup();
 
     return 0;
 }

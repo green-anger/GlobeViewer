@@ -116,4 +116,10 @@ void GlobeViewer::rotate( int x, int y )
 }
 
 
+void GlobeViewer::cleanup()
+{
+    impl_.reset();
+}
+
+
 }

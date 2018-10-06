@@ -1,4 +1,5 @@
 #include <cmath>
+#include <fstream>
 #include <stdexcept>
 #include <vector>
 
@@ -7,11 +8,15 @@
 //#include <glm/gtc/type_ptr.hpp>
 
 #include "DataKeeper.h"
+#include "Profiler.h"
 #include "Projector.h"
 
 
 namespace gv
 {
+
+
+using namespace support;
 
 
 DataKeeper::DataKeeper()
@@ -53,6 +58,9 @@ DataKeeper::DataKeeper()
 
 DataKeeper::~DataKeeper()
 {
+    std::ofstream file( "profile_map.txt", std::ios::out );
+    Profiler::printStatistics( file );
+    file.close();
 }
 
 
@@ -78,6 +86,8 @@ void DataKeeper::init()
 
 void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 {
+    Profiler prof( "DataKeeper::rotateGlobe" );
+
     float meterInPixel = meterInPixelGrabber_();
     static const double stepLon = 0.05;
     static const double stepLat = 0.05;
@@ -162,6 +172,8 @@ std::tuple<GLuint, std::size_t> DataKeeper::wireGlobe() const
 
 void DataKeeper::composeWireGlobe()
 {
+    Profiler prof( "DataKeeper::composeWireGlobe" );
+
     static const float gapLon = 10.0f;
     static const float gapLat = 10.0f;
     static const float begLon = -180.0f;

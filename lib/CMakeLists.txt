@@ -20,6 +20,7 @@ set( HDRS
     ${HEADERS_IMPL}/Viewport.h
     ${HEADERS_SUPP}/FpsCounter.h
     ${HEADERS_SUPP}/LoadGL.h
+    ${HEADERS_SUPP}/Profiler.h
     ${HEADERS_SUPP}/Shader.h
 )
 
@@ -31,6 +32,7 @@ set( SRCS
     ${SOURCES_ROOT}/Viewport.cpp
     ${SOURCES_SUPP}/glad/glad.c
     ${SOURCES_SUPP}/FpsCounter.cpp
+    ${SOURCES_SUPP}/Profiler.cpp
     ${SOURCES_SUPP}/Shader.cpp
 )
 
