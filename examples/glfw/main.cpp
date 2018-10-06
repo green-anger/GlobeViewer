@@ -106,11 +106,11 @@ void mouseCallback( GLFWwindow* window, double xpos, double ypos )
     {
         if ( shift )
         {
-            globalViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+            globalViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
         }
         else
         {
-            globalViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+            globalViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
         }
     }
 }
