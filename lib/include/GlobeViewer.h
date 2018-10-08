@@ -20,6 +20,7 @@ public:
     void move( int x, int y );
     void zoom( int steps );
     void centerView();
+    void baseState();
     void rotate( int x, int y );
 
     /*! \brief  Call this at the end of the main function

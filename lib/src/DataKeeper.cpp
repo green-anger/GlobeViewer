@@ -158,6 +158,13 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 }
 
 
+void DataKeeper::balanceGlobe()
+{
+    projector_->setProjectionAt( 0.0, 0.0 );
+    composeWireGlobe();
+}
+
+
 void DataKeeper::registerUnitInMeterGrabber( const std::function<float()>& func )
 {
     unitInMeterGrabber_ = func;

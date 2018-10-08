@@ -21,6 +21,7 @@ public:
 
     void init();
     void rotateGlobe( int pixelX, int pixelY );
+    void balanceGlobe();
 
     void registerUnitInMeterGrabber( const std::function<float()>& );
     void registerMeterInPixelGrabber( const std::function<float()>& );

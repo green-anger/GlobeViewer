@@ -152,6 +152,12 @@ void GlobeViewer::centerView()
 }
 
 
+void GlobeViewer::baseState()
+{
+    impl_->ioc.post( [this] { impl_->dataKeeper->balanceGlobe(); } );
+}
+
+
 void GlobeViewer::rotate( int x, int y )
 {
     impl_->ioc.post( [this, x, y] { impl_->dataKeeper->rotateGlobe( x, y ); } );
