@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include <proj.h>
 
 
@@ -25,6 +27,8 @@ private:
 
     double projLon_;
     double projLat_;
+
+    mutable std::mutex mutex_;
 };
 
 
