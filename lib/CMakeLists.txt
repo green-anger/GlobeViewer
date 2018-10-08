@@ -1,5 +1,11 @@
 set( lib globe_viewer )
 
+set( Boost_USE_STATIC_LIBS ON )
+set( Boost_USE_MULTITHREADED ON )
+set( Boost_USE_STATIC_RUNTIME OFF )
+add_definitions( -DBOOST_ALL_NO_LIB )
+
+find_package( Boost 1.67.0 REQUIRED COMPONENTS system )
 find_package( OpenGL REQUIRED )
 find_package( glm REQUIRED )
 find_package( PROJ4 5.0.0 REQUIRED )
@@ -41,6 +47,7 @@ include_directories(
     ${HEADERS_IMPL}
     ${HEADERS_SUPP}
     ${HEADERS_GLAD}
+    ${Boost_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIRS}
     ${PROJ4_INCLUDE_DIRS}
 )
@@ -48,6 +55,7 @@ include_directories(
 add_library( ${lib} ${SRCS} ${HDRS} )
 
 target_link_libraries( ${lib}
+    ${Boost_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${PROJ4_LIBRARIES}
 )

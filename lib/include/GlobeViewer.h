@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 
 
@@ -9,7 +10,7 @@ namespace gv {
 class GlobeViewer
 {
 public:
-    GlobeViewer();
+    GlobeViewer( std::function<void()> );
     ~GlobeViewer();
 
     bool validSetup() const;

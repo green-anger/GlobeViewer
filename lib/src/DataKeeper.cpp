@@ -1,7 +1,11 @@
 #include <cmath>
 #include <fstream>
+#include <mutex>
 #include <stdexcept>
+#include <thread>
 #include <vector>
+
+#include <iostream>
 
 //#define GLM_FORCE_RADIANS
 //#include <glm/gtc/matrix_transform.hpp>
@@ -10,6 +14,14 @@
 #include "DataKeeper.h"
 #include "Profiler.h"
 #include "Projector.h"
+
+
+namespace
+{
+
+std::mutex mutWire;
+
+}
 
 
 namespace gv
@@ -166,6 +178,7 @@ std::tuple<GLuint, std::size_t> DataKeeper::simpleTriangle() const
 
 std::tuple<GLuint, std::size_t> DataKeeper::wireGlobe() const
 {
+    std::lock_guard<std::mutex> lock( mutWire );
     return std::make_tuple( vaoWire_, numWire_ );
 }
 
@@ -242,6 +255,8 @@ void DataKeeper::composeWireGlobe()
             vec.emplace_back( static_cast<GLfloat>( y2 * unitInMeter_ ) );
         }
     }
+
+    std::lock_guard<std::mutex> lock( mutWire );
 
     glBindBuffer( GL_ARRAY_BUFFER, vboWire_ );
     glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), vec.empty() ? nullptr : &vec[0], GL_STATIC_DRAW );

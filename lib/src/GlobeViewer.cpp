@@ -1,10 +1,18 @@
 #include <functional>
+#include <future>
 #include <stdexcept>
+#include <thread>
+
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 
 #include "DataKeeper.h"
 #include "GlobeViewer.h"
 #include "Renderer.h"
 #include "Viewport.h"
+
+
+using namespace boost::asio;
 
 
 namespace gv
@@ -14,36 +22,55 @@ namespace gv
 struct GlobeViewer::Impl
 {
 public:
-    Impl();
+    Impl( std::function<void()> );
     ~Impl();
 
     bool initGl() const;
     void initData();
 
     bool valid;
+
+    std::function<void()> makeCurrent;
+
     std::shared_ptr<DataKeeper> dataKeeper;
     std::shared_ptr<Viewport> viewport;
     std::unique_ptr<Renderer> renderer;
+
+    boost::asio::io_context ioc;
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work;
+    std::vector<std::thread> threads;
 };
 
 
-GlobeViewer::Impl::Impl()
+GlobeViewer::Impl::Impl( std::function<void()> func )
     : valid( false )
+    , makeCurrent( func )
+    , ioc()
+    , work( std::make_unique<executor_work_guard<io_context::executor_type>>( ioc.get_executor() ) ) 
 {
-    if ( !initGl() )
-        throw std::logic_error( "OpenGL initialization failed!" );
-
-    initData();
+    // single thread = implicit strand
+    threads.emplace_back( [this]() { ioc.run(); } );
 }
 
 
 GlobeViewer::Impl::~Impl()
 {
+    work.reset();
+    ioc.stop();
+
+    for ( auto&& t : threads )
+    {
+        if ( t.joinable() )
+        {
+            t.join();
+        }
+    }
 }
 
 
 bool GlobeViewer::Impl::initGl() const
 {
+    makeCurrent();
     return gladLoadGL();
 }
 
@@ -63,9 +90,21 @@ void GlobeViewer::Impl::initData()
 }
 
 
-GlobeViewer::GlobeViewer()
-    : impl_( new GlobeViewer::Impl )
+GlobeViewer::GlobeViewer( std::function<void()> func )
+    : impl_( new GlobeViewer::Impl( func ) )
 {
+    std::promise<void> promInit;
+    impl_->ioc.post( [&promInit, this]
+    {
+        if ( !impl_->initGl() )
+        {
+            throw std::logic_error( "OpenGL initialization failed!" );
+        }
+
+        impl_->initData();
+        promInit.set_value();
+    } );
+    promInit.get_future().wait();
 }
 
 
@@ -82,37 +121,40 @@ bool GlobeViewer::validSetup() const
 
 void GlobeViewer::render()
 {
-    impl_->renderer->render();
+    impl_->ioc.post( [this] {
+        impl_->makeCurrent();
+        impl_->renderer->render();
+    } );
 }
 
 
 void GlobeViewer::resize( int w, int h )
 {
-    impl_->viewport->resize( w, h );
+    impl_->ioc.post( [this, w, h] { impl_->viewport->resize( w, h ); } );
 }
 
 
 void GlobeViewer::move( int x, int y )
 {
-    impl_->viewport->move( x, y );
+    impl_->ioc.post( [this, x, y] { impl_->viewport->move( x, y ); } );
 }
 
 
 void GlobeViewer::zoom( int steps )
 {
-    impl_->viewport->zoom( steps );
+    impl_->ioc.post( [this, steps] { impl_->viewport->zoom( steps ); } );
 }
 
 
 void GlobeViewer::centerView()
 {
-    impl_->viewport->center();
+    impl_->ioc.post( [this] { impl_->viewport->center(); } );
 }
 
 
 void GlobeViewer::rotate( int x, int y )
 {
-    impl_->dataKeeper->rotateGlobe( x, y );
+    impl_->ioc.post( [this, x, y] { impl_->dataKeeper->rotateGlobe( x, y ); } );
 }
 
 

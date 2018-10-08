@@ -28,6 +28,8 @@ Projector::~Projector()
 
 void Projector::setProjectionAt( double lon, double lat )
 {
+    std::lock_guard<std::mutex> lock( mutex_ );
+
     if ( projection_ )
     {
         proj_destroy( projection_ );
@@ -45,16 +47,19 @@ void Projector::setProjectionAt( double lon, double lat )
     else projLon_ = lon;
 
     projLat_ = lat;
-
 }
 
 
 bool Projector::projectFwd( double lon, double lat, double& x, double& y ) const
 {
-    PJ_COORD src = proj_coord( proj_torad( lon ), proj_torad( lat ), 0.0, 0.0 );
-    PJ_COORD dst = proj_trans( projection_, PJ_FWD, src );
-    x = dst.xy.x;
-    y = dst.xy.y;
+    PJ_COORD res;
+    {
+        std::lock_guard<std::mutex> lock( mutex_ );
+        PJ_COORD src = proj_coord( proj_torad( lon ), proj_torad( lat ), 0.0, 0.0 );
+        res = proj_trans( projection_, PJ_FWD, src );
+    }
+    x = res.xy.x;
+    y = res.xy.y;
 
     return ( x != HUGE_VAL && y != HUGE_VAL );
 }
@@ -62,10 +67,14 @@ bool Projector::projectFwd( double lon, double lat, double& x, double& y ) const
 
 bool Projector::projectInv( double x, double y, double& lon, double& lat ) const
 {
-    PJ_COORD src = proj_coord( x, y, 0.0, 0.0 );
-    PJ_COORD dst = proj_trans( projection_, PJ_INV, src );
-    lon = proj_todeg( dst.lp.lam );
-    lat = proj_todeg( dst.lp.phi );
+    PJ_COORD res;
+    {
+        std::lock_guard<std::mutex> lock( mutex_ );
+        PJ_COORD src = proj_coord( x, y, 0.0, 0.0 );
+        res = proj_trans( projection_, PJ_INV, src );
+    }
+    lon = proj_todeg( res.lp.lam );
+    lat = proj_todeg( res.lp.phi );
 
     return ( lon != HUGE_VAL && lat != HUGE_VAL );
 }
@@ -73,12 +82,16 @@ bool Projector::projectInv( double x, double y, double& lon, double& lat ) const
 
 double Projector::projLon() const
 {
+    std::lock_guard<std::mutex> lock( mutex_ );
+
     return projLon_;
 }
 
 
 double Projector::projLat() const
 {
+    std::lock_guard<std::mutex> lock( mutex_ );
+
     return projLat_;
 }
 

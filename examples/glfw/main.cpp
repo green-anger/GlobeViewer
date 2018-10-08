@@ -1,3 +1,4 @@
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -34,7 +35,9 @@ int main( int argc, char** argv )
     if ( !window )
         return -1;
 
-    globalViewer.reset( new gv::GlobeViewer() );
+    glfwMakeContextCurrent( nullptr );
+
+    globalViewer.reset( new gv::GlobeViewer( std::bind( glfwMakeContextCurrent, window ) ) );
 
     if ( !globalViewer->validSetup() )
         return -1;
