@@ -19,7 +19,7 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
 
 std::tuple<GLFWwindow*, int, int> setupWindow( const std::string& title );
 
-std::unique_ptr<gv::GlobeViewer> globalViewer;
+std::unique_ptr<gv::GlobeViewer> globeViewer;
 bool drag = false;
 bool shift = false;
 bool firstClick = true;
@@ -37,14 +37,14 @@ int main( int argc, char** argv )
 
     glfwMakeContextCurrent( nullptr );
 
-    globalViewer.reset( new gv::GlobeViewer( std::bind( glfwMakeContextCurrent, window ) ) );
+    globeViewer.reset( new gv::GlobeViewer( std::bind( glfwMakeContextCurrent, window ) ) );
 
-    if ( !globalViewer->validSetup() )
+    if ( !globeViewer->validSetup() )
         return -1;
 
     const auto width = std::get<1>( tup );
     const auto height = std::get<2>( tup );
-    globalViewer->resize( width, height );
+    globeViewer->resize( width, height );
 
     glfwSetWindowFocusCallback( window, windowFocusCallback );
     glfwSetFramebufferSizeCallback( window, framebufferSizeCallback );
@@ -65,14 +65,14 @@ int main( int argc, char** argv )
         }
 
         glfwPollEvents();
-        globalViewer->render();
+        globeViewer->render();
         glfwSwapBuffers( window );
     }
 
     glfwDestroyWindow( window );
     glfwTerminate();
 
-    globalViewer->cleanup();
+    globeViewer->cleanup();
 
     return 0;
 }
@@ -89,7 +89,7 @@ void windowFocusCallback( GLFWwindow* window, int focused )
 
 void framebufferSizeCallback( GLFWwindow* window, int width, int height )
 {
-    globalViewer->resize( width, height );
+    globeViewer->resize( width, height );
 }
 
 
@@ -111,11 +111,11 @@ void mouseCallback( GLFWwindow* window, double xpos, double ypos )
     {
         if ( shift )
         {
-            globalViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+            globeViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
         }
         else
         {
-            globalViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+            globeViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
         }
     }
 }
@@ -136,7 +136,7 @@ void mouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
 
 void scrollCallback( GLFWwindow* window, double xpos, double ypos )
 {
-    globalViewer->zoom( static_cast<int>( ypos ) );
+    globeViewer->zoom( static_cast<int>( ypos ) );
 }
 
 
@@ -148,7 +148,7 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
     }
     else if ( GLFW_KEY_C == key && GLFW_PRESS == action )
     {
-        globalViewer->centerView();
+        globeViewer->centerView();
     }
 
     if ( !drag )
@@ -164,7 +164,7 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
 
         if ( xoff != 0 || yoff != 0 )
         {
-            globalViewer->move( xoff, yoff );
+            globeViewer->move( xoff, yoff );
         }
     }
 
