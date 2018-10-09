@@ -78,16 +78,20 @@ DataKeeper::~DataKeeper()
 
 void DataKeeper::init()
 {
-    if ( !unitInMeterGrabber_ )
+    boost::optional<float> optUnitInMeter = getUnitInMeter();
+
+    if ( !optUnitInMeter )
     {
         throw std::logic_error( "Cannot initialize DataKeeper. Not unitInMeterGrabber defined!" );
     }
     else
     {
-        unitInMeter_ = unitInMeterGrabber_();
+        unitInMeter_ = *optUnitInMeter;
     }
 
-    if ( !meterInPixelGrabber_ )
+    boost::optional<float> optMeterInPixel = getMeterInPixel();
+
+    if ( !optMeterInPixel )
     {
         throw std::logic_error( "Cannot initialize DataKeeper. Not meterInPixelGrabber defined!" );
     }
@@ -100,7 +104,7 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 {
     Profiler prof( "DataKeeper::rotateGlobe" );
 
-    float meterInPixel = meterInPixelGrabber_();
+    float meterInPixel = *getMeterInPixel();
     static const double stepLon = 0.05;
     static const double stepLat = 0.05;
     double lon;
@@ -162,18 +166,6 @@ void DataKeeper::balanceGlobe()
 {
     projector_->setProjectionAt( 0.0, 0.0 );
     composeWireGlobe();
-}
-
-
-void DataKeeper::registerUnitInMeterGrabber( const std::function<float()>& func )
-{
-    unitInMeterGrabber_ = func;
-}
-
-
-void DataKeeper::registerMeterInPixelGrabber( const std::function<float()>& func )
-{
-    meterInPixelGrabber_ = func;
 }
 
 

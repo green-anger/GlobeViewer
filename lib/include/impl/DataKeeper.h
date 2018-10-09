@@ -4,6 +4,8 @@
 #include <memory>
 #include <tuple>
 
+#include <boost/signals2.hpp>
+
 #include "LoadGL.h"
 
 
@@ -23,8 +25,8 @@ public:
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
 
-    void registerUnitInMeterGrabber( const std::function<float()>& );
-    void registerMeterInPixelGrabber( const std::function<float()>& );
+    boost::signals2::signal<float()> getUnitInMeter;
+    boost::signals2::signal<float()> getMeterInPixel;
 
     std::tuple<GLuint, std::size_t> simpleTriangle() const;
     std::tuple<GLuint, std::size_t> wireGlobe() const;
@@ -32,8 +34,6 @@ public:
 private:
     void composeWireGlobe();
 
-    std::function<float()> unitInMeterGrabber_;
-    std::function<float()> meterInPixelGrabber_;
     float unitInMeter_;
 
     std::shared_ptr<Projector> projector_;

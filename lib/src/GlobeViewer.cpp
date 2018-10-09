@@ -5,6 +5,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <boost/signals2.hpp>
 
 #include "DataKeeper.h"
 #include "GlobeViewer.h"
@@ -81,8 +82,8 @@ void GlobeViewer::Impl::initData()
     viewport.reset( new Viewport() );
     renderer.reset( new Renderer( dataKeeper, viewport ) );
 
-    dataKeeper->registerUnitInMeterGrabber( std::bind( &Viewport::unitInMeter, viewport ) );
-    dataKeeper->registerMeterInPixelGrabber( std::bind( &Viewport::meterInPixel, viewport ) );
+    dataKeeper->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
+    dataKeeper->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
 
     dataKeeper->init();
 
