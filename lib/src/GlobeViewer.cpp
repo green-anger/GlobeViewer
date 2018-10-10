@@ -38,7 +38,7 @@ public:
     std::unique_ptr<Renderer> renderer;
 
     boost::asio::io_context ioc;
-    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work;
+    executor_work_guard<io_context::executor_type> work;
     std::vector<std::thread> threads;
 };
 
@@ -47,7 +47,7 @@ GlobeViewer::Impl::Impl( std::function<void()> func )
     : valid( false )
     , makeCurrent( func )
     , ioc()
-    , work( std::make_unique<executor_work_guard<io_context::executor_type>>( ioc.get_executor() ) ) 
+    , work( make_work_guard( ioc ) )
 {
     // single thread = implicit strand
     threads.emplace_back( [this]() { ioc.run(); } );
