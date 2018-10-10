@@ -9,7 +9,6 @@ find_package( Boost 1.67.0 REQUIRED COMPONENTS system )
 find_package( OpenGL REQUIRED )
 find_package( glm REQUIRED )
 find_package( PROJ4 5.0.0 REQUIRED )
-find_package( png REQUIRED )
 
 set( HEADERS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 set( HEADERS_IMPL "${HEADERS_ROOT}/impl" )
@@ -53,7 +52,6 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIRS}
     ${PROJ4_INCLUDE_DIRS}
-    ${PNG_INCLUDE_DIRS}
 )
 
 add_library( ${lib} ${SRCS} ${HDRS} )
@@ -62,7 +60,6 @@ target_link_libraries( ${lib}
     ${Boost_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${PROJ4_LIBRARIES}
-    ${PNG_LIBRARIES}
 )
 
 if ( MSVC )

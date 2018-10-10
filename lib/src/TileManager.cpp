@@ -1,4 +1,5 @@
 ﻿#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -6,15 +7,12 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/png_io.hpp>
 
 #include "TileManager.h"
 
 
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
-using namespace boost::gil;
 
 
 namespace gv
@@ -180,12 +178,12 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
         << "reason = " << head.reason() << "\n"
         << std::endl;
 
-    rgb8_image_t img( 512, 512 );
-    rgb8_pixel_t red( 255, 0, 0 );
-    fill_pixels( view( img ), red );
-    png_write_view( "red.png", const_view( img ) );
+    const auto& body = response_.body();
+    std::ofstream tile( "tile.png", std::ios::out | std::ios::binary );
+    tile.write( body.c_str(), body.size() );
+    tile.close();
 
-    std::cout << "Red square was written!" << std::endl;
+    std::cout << "Tile was written!" << std::endl;
 }
 
 
