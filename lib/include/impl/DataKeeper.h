@@ -13,6 +13,7 @@ namespace gv {
 
 
 class Projector;
+class TileManager;
 
 
 class DataKeeper
@@ -37,6 +38,7 @@ private:
     float unitInMeter_;
 
     std::shared_ptr<Projector> projector_;
+    std::shared_ptr<TileManager> tileManager_;
 
     GLuint vaoST_;  //!< vao for Simple Triangle
     GLuint vboST_;  //!< vbo for Simple Triangle

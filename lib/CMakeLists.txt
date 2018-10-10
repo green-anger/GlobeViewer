@@ -23,6 +23,7 @@ set( HDRS
     ${HEADERS_IMPL}/DataKeeper.h
     ${HEADERS_IMPL}/Projector.h
     ${HEADERS_IMPL}/Renderer.h
+    ${HEADERS_IMPL}/TileManager.h
     ${HEADERS_IMPL}/Viewport.h
     ${HEADERS_SUPP}/FpsCounter.h
     ${HEADERS_SUPP}/LoadGL.h
@@ -35,6 +36,7 @@ set( SRCS
     ${SOURCES_ROOT}/DataKeeper.cpp
     ${SOURCES_ROOT}/Projector.cpp
     ${SOURCES_ROOT}/Renderer.cpp
+    ${SOURCES_ROOT}/TileManager.cpp
     ${SOURCES_ROOT}/Viewport.cpp
     ${SOURCES_SUPP}/glad/glad.c
     ${SOURCES_SUPP}/FpsCounter.cpp

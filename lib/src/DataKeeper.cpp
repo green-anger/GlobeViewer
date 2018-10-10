@@ -7,19 +7,16 @@
 
 #include <iostream>
 
-//#define GLM_FORCE_RADIANS
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-
 #include "DataKeeper.h"
 #include "Profiler.h"
 #include "Projector.h"
+#include "TileManager.h"
 
 
 namespace
 {
 
-std::mutex mutWire;
+std::mutex mutexWire;
 
 }
 
@@ -33,6 +30,7 @@ using namespace support;
 
 DataKeeper::DataKeeper()
     : projector_( new Projector )
+    , tileManager_( new TileManager )
     , numST_( 0 )
     , numWire_( 0 )
     , rotatedLon_( 0.0 )
@@ -177,7 +175,7 @@ std::tuple<GLuint, std::size_t> DataKeeper::simpleTriangle() const
 
 std::tuple<GLuint, std::size_t> DataKeeper::wireGlobe() const
 {
-    std::lock_guard<std::mutex> lock( mutWire );
+    std::lock_guard<std::mutex> lock( mutexWire );
     return std::make_tuple( vaoWire_, numWire_ );
 }
 
@@ -255,7 +253,7 @@ void DataKeeper::composeWireGlobe()
         }
     }
 
-    std::lock_guard<std::mutex> lock( mutWire );
+    std::lock_guard<std::mutex> lock( mutexWire );
 
     glBindBuffer( GL_ARRAY_BUFFER, vboWire_ );
     glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), vec.empty() ? nullptr : &vec[0], GL_STATIC_DRAW );
