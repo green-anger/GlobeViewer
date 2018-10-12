@@ -80,10 +80,14 @@ void GlobeViewer::Impl::initData()
 {
     dataKeeper.reset( new DataKeeper() );
     viewport.reset( new Viewport() );
-    renderer.reset( new Renderer( dataKeeper, viewport ) );
+    renderer.reset( new Renderer() );
 
     dataKeeper->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
     dataKeeper->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
+
+    renderer->getProjection.connect( std::bind( &Viewport::projection, viewport ) );
+    renderer->renderSimpleTriangle.connect( std::bind( &DataKeeper::simpleTriangle, dataKeeper ) );
+    renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
 
     dataKeeper->init();
 
