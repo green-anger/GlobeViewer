@@ -3,29 +3,45 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/filesystem.hpp>
 
 #include "TileManager.h"
 
 
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
+using namespace boost::filesystem;
 
 
-namespace gv
+namespace {
+
+
+const std::string cache = "cache";
+
+std::string dirForTile( const gv::TileHead& tileHead)
 {
+    return cache + "/" + std::to_string( tileHead.z ) + "/" + std::to_string( tileHead.x ) + "/";
+}
+
+
+}
+
+
+namespace gv {
 
 
 class TileManager::Session : public std::enable_shared_from_this<TileManager::Session>
 {
 public:
-    explicit Session( boost::asio::io_context& ioc );
+    explicit Session( boost::asio::io_context& ioc, const TileHead& );
     ~Session();
 
-    void run( const std::string& host, const std::string& port, const std::string& target, int version );
+    void get( const std::string& host, const std::string& port );
 
 private:
     void error( boost::system::error_code, const std::string& );
@@ -40,37 +56,72 @@ private:
     http::request<http::empty_body> request_;
     http::response<http::string_body> response_;
     std::chrono::time_point<std::chrono::steady_clock> start_;
+    TileHead tileHead_;
+    std::string target_;
 };
 
 
+}
+
+
+namespace gv {
+
+
 TileManager::TileManager()
-    : ioc()
-    , work( make_work_guard( ioc ) )
+    : ioc_()
+    , work_( make_work_guard( ioc_ ) )
+    , hosts_( { "a.tile.openstreetmap.org", "b.tile.openstreetmap.org", "c.tile.openstreetmap.org" } )
+    , port_( "80" )
+    , curHost_( 0 )
 {
     std::cout << std::this_thread::get_id() << ": TileManager()" << std::endl;
 
-    const int tNum = 2;
+    const int tNum = 4; // std::thread::hardware_concurrency() - 1;
 
     for ( int i = 0; i < tNum; ++i )
     {
-        threads.emplace_back( [this]() { ioc.run(); } );
+        threads_.emplace_back( [this]() { ioc_.run(); } );
     }
 
-    const std::string host = "a.tile.openstreetmap.org";
-    const std::string port = "80";
-    const std::string target = "/0/0/0.png";
-    int version = 11;
+    heads_.emplace( 0, 0, 0 );
+    heads_.emplace( 1, 0, 0 );
+    heads_.emplace( 1, 0, 1 );
+    heads_.emplace( 1, 1, 0 );
+    heads_.emplace( 1, 1, 1 );
+    heads_.emplace( 2, 0, 0 );
+    heads_.emplace( 2, 0, 1 );
+    heads_.emplace( 2, 0, 2 );
+    heads_.emplace( 2, 0, 3 );
+    heads_.emplace( 2, 1, 0 );
+    heads_.emplace( 2, 1, 1 );
+    heads_.emplace( 2, 1, 2 );
+    heads_.emplace( 2, 1, 3 );
+    heads_.emplace( 2, 2, 0 );
+    heads_.emplace( 2, 2, 1 );
+    heads_.emplace( 2, 2, 2 );
+    heads_.emplace( 2, 2, 3 );
+    heads_.emplace( 2, 3, 0 );
+    heads_.emplace( 2, 3, 1 );
+    heads_.emplace( 2, 3, 2 );
+    heads_.emplace( 2, 3, 3 );
 
-    std::make_shared<Session>( ioc )->run( host, port, target, version );
+    for ( const auto& head : heads_ )
+    {
+        prepareDir( head );
+        tileMap_.emplace( std::piecewise_construct, std::make_tuple( head ), std::make_tuple() );
+        //tileMap_.emplace( std::piecewise_construct, std::make_tuple( 1, 0, 0 ), std::make_tuple() );
+    }
+
+    download( tileMap_ );
 }
 
 
 TileManager::~TileManager()
 {
-    work.reset();
-    ioc.stop();
+    work_.reset();
+    ioc_.stop();
 
-    for ( auto&& t : threads )
+    for ( auto&& t : threads_ )
     {
         if ( t.joinable() )
         {
@@ -80,10 +131,71 @@ TileManager::~TileManager()
 }
 
 
-TileManager::Session::Session( boost::asio::io_context& ioc )
+void TileManager::download( Tile& tile )
+{
+    std::make_shared<Session>( ioc_, tile.head )->get( hosts_[curHost_], port_ );
+    curHost_ = ( curHost_ + 1 ) % std::tuple_size_v<decltype( hosts_ )>;
+}
+
+
+void TileManager::download( TileMap& tileMap )
+{
+    TileMap ts;
+
+    for ( auto& t : tileMap )
+    {
+        Tile tile( t.first, t.second );
+        download( tile );
+        t.second = std::move( tile.body );
+    }
+}
+
+
+void TileManager::cache( Tile& tile ) const
+{
+}
+
+
+void TileManager::cache( TileMap& tileMap ) const
+{
+}
+
+
+bool TileManager::cacheHas( const Tile& tile ) const
+{
+    return false;
+}
+
+
+void TileManager::prepareDir( const TileHead& tileHead )
+{
+    auto key = std::make_pair( tileHead.z, tileHead.x );
+    auto it = dirs_.find( key );
+
+    if ( it == dirs_.end() )
+    {
+        auto dir = dirForTile( tileHead );
+        create_directories( dir );
+        dirs_.emplace( key, dir );
+    }
+}
+
+
+}
+
+
+namespace gv {
+
+
+TileManager::Session::Session( boost::asio::io_context& ioc, const TileHead& head )
     : resolver_( ioc )
     , socket_( ioc )
+    , tileHead_( head )
 {
+    target_ =
+        "/" + std::to_string( head.z ) +
+        "/" + std::to_string( head.x ) +
+        "/" + std::to_string( head.y ) + ".png";
 }
 
 
@@ -99,15 +211,16 @@ TileManager::Session::~Session()
 }
 
 
-void TileManager::Session::run( const std::string& host, const std::string& port, const std::string& target, int version )
+void TileManager::Session::get( const std::string& host, const std::string& port )
 {
-    request_.version( version );
+    request_.version( 11 );
     request_.method( http::verb::get );
-    request_.target( target );
+    request_.target( target_ );
     request_.set( http::field::host, host.c_str() );
     request_.set( http::field::user_agent, BOOST_BEAST_VERSION_STRING );
 
     start_ = std::chrono::steady_clock::now();
+
 
     namespace ph = std::placeholders;
     resolver_.async_resolve( host.c_str(), port.c_str(),
@@ -179,11 +292,11 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
         << std::endl;
 
     const auto& body = response_.body();
-    std::ofstream tile( "tile.png", std::ios::out | std::ios::binary );
+    std::ofstream tile( dirForTile( tileHead_ ) + std::to_string( tileHead_.y ) + ".png", std::ios::out | std::ios::binary );
     tile.write( body.c_str(), body.size() );
     tile.close();
 
-    std::cout << "Tile was written!" << std::endl;
+    std::cout << "Tile " << target_ << " was written!" << std::endl;
 }
 
 

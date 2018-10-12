@@ -1,9 +1,17 @@
 #pragma once
 
+#include <array>
+#include <mutex>
+#include <string>
 #include <thread>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
+
+#include "type/TileMap.h"
 
 
 namespace gv {
@@ -17,10 +25,26 @@ public:
 
 private:
     class Session;
-  
-    boost::asio::io_context ioc;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
-    std::vector<std::thread> threads;
+
+    void download( Tile& );
+    void download( TileMap& );
+    void cache( Tile& ) const;
+    void cache( TileMap& ) const;
+    bool cacheHas( const Tile& ) const;
+    void prepareDir( const TileHead& );
+
+    boost::asio::io_context ioc_;
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
+    std::vector<std::thread> threads_;
+
+    std::unordered_set<TileHead> heads_;
+    std::unordered_map<std::pair<int, int>, std::string> dirs_;
+    const std::array<std::string, 3> hosts_;
+    const std::string port_;
+    int curHost_;
+
+    TileMap tileMap_;
+    std::mutex mutexMap_;
 };
 
 
