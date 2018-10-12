@@ -2,7 +2,6 @@
 #include <fstream>
 #include <mutex>
 #include <stdexcept>
-#include <thread>
 #include <vector>
 
 #include <iostream>
@@ -10,7 +9,6 @@
 #include "DataKeeper.h"
 #include "Profiler.h"
 #include "Projector.h"
-#include "TileManager.h"
 
 
 namespace
@@ -29,9 +27,7 @@ using namespace support;
 
 
 DataKeeper::DataKeeper()
-    : projector_( new Projector )
-    , tileManager_( new TileManager )
-    , numST_( 0 )
+    : numST_( 0 )
     , numWire_( 0 )
     , rotatedLon_( 0.0 )
     , rotatedLat_( 0.0 )
@@ -95,6 +91,10 @@ void DataKeeper::init()
     if ( !getProjector() )
     {
         throw std::logic_error( "Cannot initialize DataKeeper: getProjector is not defined!" );
+    }
+    else
+    {
+        projector_ = *getProjector();
     }
 
     composeWireGlobe();

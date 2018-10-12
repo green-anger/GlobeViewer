@@ -11,6 +11,7 @@
 #include "GlobeViewer.h"
 #include "Projector.h"
 #include "Renderer.h"
+#include "TileManager.h"
 #include "Viewport.h"
 
 
@@ -37,6 +38,7 @@ public:
     std::shared_ptr<DataKeeper> dataKeeper;
     std::shared_ptr<Projector> projector;
     std::shared_ptr<Renderer> renderer;
+    std::shared_ptr<TileManager> tileManager;
     std::shared_ptr<Viewport> viewport;
 
     boost::asio::io_context ioc;
