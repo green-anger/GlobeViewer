@@ -80,18 +80,21 @@ void DataKeeper::init()
 
     if ( !optUnitInMeter )
     {
-        throw std::logic_error( "Cannot initialize DataKeeper. Not unitInMeterGrabber defined!" );
+        throw std::logic_error( "Cannot initialize DataKeeper: getUnitInMeter is not defined!" );
     }
     else
     {
         unitInMeter_ = *optUnitInMeter;
     }
 
-    boost::optional<float> optMeterInPixel = getMeterInPixel();
-
-    if ( !optMeterInPixel )
+    if ( !getMeterInPixel() )
     {
-        throw std::logic_error( "Cannot initialize DataKeeper. Not meterInPixelGrabber defined!" );
+        throw std::logic_error( "Cannot initialize DataKeeper: getMeterInPixel is not defined!" );
+    }
+
+    if ( !getProjector() )
+    {
+        throw std::logic_error( "Cannot initialize DataKeeper: getProjector is not defined!" );
     }
 
     composeWireGlobe();
@@ -110,7 +113,10 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 
     if ( projector_->projectInv( pixelX * meterInPixel, pixelY * meterInPixel, lon, lat ) )
     {
-        const auto projLon = projector_->projLon();
+        double projLon;
+        double projLat;
+        projector_->projectionCenter( projLon, projLat );
+
         const int signLon = pixelX < 0 ? 1 : -1;
         double diffLon = abs( lon - projLon );
         
@@ -124,7 +130,6 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
             ? floor( rotatedLon_ / stepLon ) * stepLon
             : ceil( rotatedLon_ / stepLon ) * stepLon;
 
-        const auto projLat = projector_->projLat();
         const int signLat = pixelY < 0 ? 1 : -1;
         double diffLat = abs( lat - projLat );
 

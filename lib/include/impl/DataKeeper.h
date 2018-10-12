@@ -26,11 +26,12 @@ public:
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
 
-    boost::signals2::signal<float()> getUnitInMeter;
-    boost::signals2::signal<float()> getMeterInPixel;
-
     std::tuple<GLuint, std::size_t> simpleTriangle() const;
     std::tuple<GLuint, std::size_t> wireGlobe() const;
+
+    boost::signals2::signal<float()> getUnitInMeter;
+    boost::signals2::signal<float()> getMeterInPixel;
+    boost::signals2::signal<std::shared_ptr<Projector>()> getProjector;
 
 private:
     void composeWireGlobe();
