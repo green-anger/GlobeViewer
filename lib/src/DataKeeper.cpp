@@ -2,7 +2,6 @@
 #include <fstream>
 #include <mutex>
 #include <stdexcept>
-#include <thread>
 #include <vector>
 
 #include <iostream>
@@ -10,7 +9,6 @@
 #include "DataKeeper.h"
 #include "Profiler.h"
 #include "Projector.h"
-#include "TileManager.h"
 
 
 namespace
@@ -29,9 +27,7 @@ using namespace support;
 
 
 DataKeeper::DataKeeper()
-    : projector_( new Projector )
-    , tileManager_( new TileManager )
-    , numST_( 0 )
+    : numST_( 0 )
     , numWire_( 0 )
     , rotatedLon_( 0.0 )
     , rotatedLat_( 0.0 )
@@ -80,18 +76,25 @@ void DataKeeper::init()
 
     if ( !optUnitInMeter )
     {
-        throw std::logic_error( "Cannot initialize DataKeeper. Not unitInMeterGrabber defined!" );
+        throw std::logic_error( "Cannot initialize DataKeeper: getUnitInMeter is not defined!" );
     }
     else
     {
         unitInMeter_ = *optUnitInMeter;
     }
 
-    boost::optional<float> optMeterInPixel = getMeterInPixel();
-
-    if ( !optMeterInPixel )
+    if ( !getMeterInPixel() )
     {
-        throw std::logic_error( "Cannot initialize DataKeeper. Not meterInPixelGrabber defined!" );
+        throw std::logic_error( "Cannot initialize DataKeeper: getMeterInPixel is not defined!" );
+    }
+
+    if ( !getProjector() )
+    {
+        throw std::logic_error( "Cannot initialize DataKeeper: getProjector is not defined!" );
+    }
+    else
+    {
+        projector_ = *getProjector();
     }
 
     composeWireGlobe();
@@ -110,7 +113,10 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 
     if ( projector_->projectInv( pixelX * meterInPixel, pixelY * meterInPixel, lon, lat ) )
     {
-        const auto projLon = projector_->projLon();
+        double projLon;
+        double projLat;
+        projector_->projectionCenter( projLon, projLat );
+
         const int signLon = pixelX < 0 ? 1 : -1;
         double diffLon = abs( lon - projLon );
         
@@ -124,7 +130,6 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
             ? floor( rotatedLon_ / stepLon ) * stepLon
             : ceil( rotatedLon_ / stepLon ) * stepLon;
 
-        const auto projLat = projector_->projLat();
         const int signLat = pixelY < 0 ? 1 : -1;
         double diffLat = abs( lat - projLat );
 

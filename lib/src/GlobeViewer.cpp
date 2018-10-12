@@ -9,7 +9,9 @@
 
 #include "DataKeeper.h"
 #include "GlobeViewer.h"
+#include "Projector.h"
 #include "Renderer.h"
+#include "TileManager.h"
 #include "Viewport.h"
 
 
@@ -34,8 +36,10 @@ public:
     std::function<void()> makeCurrent;
 
     std::shared_ptr<DataKeeper> dataKeeper;
+    std::shared_ptr<Projector> projector;
+    std::shared_ptr<Renderer> renderer;
+    std::shared_ptr<TileManager> tileManager;
     std::shared_ptr<Viewport> viewport;
-    std::unique_ptr<Renderer> renderer;
 
     boost::asio::io_context ioc;
     executor_work_guard<io_context::executor_type> work;
@@ -79,11 +83,19 @@ bool GlobeViewer::Impl::initGl() const
 void GlobeViewer::Impl::initData()
 {
     dataKeeper.reset( new DataKeeper() );
+    projector.reset( new Projector() );
+    renderer.reset( new Renderer() );
     viewport.reset( new Viewport() );
-    renderer.reset( new Renderer( dataKeeper, viewport ) );
+
+    namespace ph = std::placeholders;
 
     dataKeeper->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
     dataKeeper->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
+    dataKeeper->getProjector.connect( [this]() -> auto { return projector; } );
+
+    renderer->getProjection.connect( std::bind( &Viewport::projection, viewport ) );
+    renderer->renderSimpleTriangle.connect( std::bind( &DataKeeper::simpleTriangle, dataKeeper ) );
+    renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
 
     dataKeeper->init();
 

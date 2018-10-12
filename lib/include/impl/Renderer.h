@@ -1,6 +1,11 @@
 ﻿#pragma once
 
 #include <memory>
+#include <tuple>
+
+#include <boost/signals2.hpp>
+
+#include <glm/ext/matrix_float4x4.hpp>
 
 #include "LoadGl.h"
 
@@ -11,22 +16,21 @@ namespace gv {
 namespace support {
     class Shader;
 }
-class DataKeeper;
-class Viewport;
 
 
 class Renderer
 {
 public:
-    explicit Renderer( const std::shared_ptr<const DataKeeper>&, const std::shared_ptr<const Viewport>& );
+    explicit Renderer();
     ~Renderer();
 
     void render();
 
-private:
-    std::shared_ptr<const DataKeeper> dataKeeper_;
-    std::shared_ptr<const Viewport> viewport_;
+    boost::signals2::signal<glm::mat4()> getProjection;
+    boost::signals2::signal<std::tuple<GLuint, std::size_t>()> renderSimpleTriangle;
+    boost::signals2::signal<std::tuple<GLuint, std::size_t>()> renderWireGlobe;
 
+private:
     std::unique_ptr<support::Shader> shaderSimple_;
     GLint ssProj_;
     GLint ssColor_;

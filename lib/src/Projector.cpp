@@ -65,6 +65,15 @@ bool Projector::projectFwd( double lon, double lat, double& x, double& y ) const
 }
 
 
+std::tuple<bool, double, double> Projector::projectFwd( double lon, double lat ) const
+{
+    double x;
+    double y;
+    bool ok = projectFwd( lon, lat, x, y );
+    return std::make_tuple( ok, x, y );
+}
+
+
 bool Projector::projectInv( double x, double y, double& lon, double& lat ) const
 {
     PJ_COORD res;
@@ -80,19 +89,27 @@ bool Projector::projectInv( double x, double y, double& lon, double& lat ) const
 }
 
 
-double Projector::projLon() const
+std::tuple<bool, double, double> Projector::projectInv( double x, double y ) const
 {
-    std::lock_guard<std::mutex> lock( mutex_ );
-
-    return projLon_;
+    double lon;
+    double lat;
+    bool ok = projectInv( x, y, lon, lat );
+    return std::make_tuple( ok, lon, lat );
 }
 
 
-double Projector::projLat() const
+void Projector::projectionCenter( double& lon, double& lat ) const
 {
     std::lock_guard<std::mutex> lock( mutex_ );
+    lon = projLon_;
+    lat = projLat_;
+}
 
-    return projLat_;
+
+std::tuple<double, double> Projector::projectionCenter() const
+{
+    std::lock_guard<std::mutex> lock( mutex_ );
+    return std::make_tuple( projLon_, projLat_ );
 }
 
 
