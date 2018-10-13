@@ -57,12 +57,12 @@ int main( int argc, char** argv )
 
     while ( !glfwWindowShouldClose( window ) )
     {
-        auto fps = fpsC.addFrame();
+        //auto fps = fpsC.addFrame();
 
-        if ( fps > 0 )
-        {
-            std::cout << "FPS: " << fps << std::endl;
-        }
+        //if ( fps > 0 )
+        //{
+        //    std::cout << "FPS: " << fps << std::endl;
+        //}
 
         glfwPollEvents();
         globeViewer->render();

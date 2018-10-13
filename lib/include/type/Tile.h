@@ -8,9 +8,9 @@ namespace gv {
 
 struct TileHead
 {
-    int z;          //!< map zoom level
-    int x;          //!< map tile coordinate x
-    int y;          //!< map tile coordinate y
+    int z;  //!< map zoom level
+    int x;  //!< map tile coordinate x
+    int y;  //!< map tile coordinate y
 
     TileHead( int az, int ax, int ay ) : z( az ), x( ax ), y( ay ) {}
     TileHead( const TileHead& rhs ) = default;
@@ -48,7 +48,6 @@ struct TileBody
     float tx1;      //!< texture x coordinate of right-top corner
     float ty1;      //!< texture y coordinate of right-top corner
     bool visible;   //!< currently visible
-    std::vector<unsigned char> data;    //!< tile image data
 
     TileBody() = default;
     TileBody( const TileBody& rhs ) = default;
@@ -65,7 +64,6 @@ struct TileBody
         tx1 = rhs.tx1;
         ty1 = rhs.ty1;
         visible = rhs.visible;
-        data = rhs.data;
         return *this;
     }
 
@@ -80,6 +78,28 @@ struct TileBody
         tx1 = std::move( rhs.tx1 );
         ty1 = std::move( rhs.ty1 );
         visible = std::move( rhs.visible );
+        return *this;
+    }
+};
+
+
+struct TileData
+{
+    std::vector<unsigned char> data;    //!< tile image data
+
+    TileData( const std::vector<unsigned char>& vec = {} ) : data( vec ) {}
+    TileData( std::vector<unsigned char>&& vec ) : data( std::move( vec ) ) {}
+    TileData( const TileData& rhs ) = default;
+    TileData( TileData&& rhs ) = default;
+
+    TileData& operator=( const TileData& rhs )
+    {
+        data = rhs.data;
+        return *this;
+    }
+
+    TileData& operator=( TileData&& rhs )
+    {
         data = std::move( rhs.data );
         return *this;
     }
@@ -90,10 +110,11 @@ struct Tile
 {
     TileHead head;
     TileBody body;
+    TileData data;
 
     Tile( int az, int ax, int ay ) : head( az, ax, ay ) {}
-    Tile( const TileHead& ahead, const TileBody& abody = {} ) : head( ahead ), body( abody ) {}
-    Tile( TileHead&& ahead, TileBody&& abody = {} ) : head( std::move( ahead ) ), body( std::move( abody ) ) {}
+    Tile( const TileHead& ahead, const TileBody& abody = {}, const TileData& adata = {} ) : head( ahead ), body( abody ), data( adata ) {}
+    Tile( TileHead&& ahead, TileBody&& abody = {}, TileData&& adata = {} ) : head( std::move( ahead ) ), body( std::move( abody ) ), data( std::move( adata ) ) {}
     Tile( const Tile& rhs ) = default;
     Tile( Tile&& rhs ) = default;
 
@@ -101,12 +122,39 @@ struct Tile
     {
         head = rhs.head;
         body = rhs.body;
+        data = rhs.data;
     }
 
     Tile& operator=( Tile&& rhs )
     {
         head = std::move( rhs.head );
         body = std::move( rhs.body );
+        data = std::move( rhs.data );
+    }
+};
+
+
+struct TileImage
+{
+    TileHead head;
+    TileData data;
+
+    TileImage( int az, int ax, int ay ) : head( az, ax, ay ) {}
+    TileImage( const TileHead& ahead, const TileData& adata = {} ) : head( ahead ), data( adata ) {}
+    TileImage( TileHead&& ahead, TileData&& adata ) : head( std::move( ahead ) ), data( std::move( adata ) ) {}
+    TileImage( const TileImage& rhs ) = default;
+    TileImage( TileImage&& rhs ) = default;
+
+    TileImage& operator=( const TileImage& rhs )
+    {
+        head = rhs.head;
+        data = rhs.data;
+    }
+
+    TileImage& operator=( TileImage&& rhs )
+    {
+        head = std::move( rhs.head );
+        data = std::move( rhs.data );
     }
 };
 
