@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <thread>
 
+#include <iostream>
+
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/signals2.hpp>
@@ -85,6 +87,7 @@ void GlobeViewer::Impl::initData()
     dataKeeper.reset( new DataKeeper() );
     projector.reset( new Projector() );
     renderer.reset( new Renderer() );
+    tileManager.reset( new TileManager() );
     viewport.reset( new Viewport() );
 
     namespace ph = std::placeholders;
@@ -97,9 +100,26 @@ void GlobeViewer::Impl::initData()
     renderer->renderSimpleTriangle.connect( std::bind( &DataKeeper::simpleTriangle, dataKeeper ) );
     renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
 
+    tileManager->sendTiles.connect( []( const std::vector<TileImage>& vec )
+    {
+        std::cout << "For testing purpose only we get " << vec.size() << " tile images" << std::endl;
+    } );
+
     dataKeeper->init();
 
     valid = true;
+
+    {
+        std::cout << "Requesting some tile images" << std::endl;
+        //tileManager->requestTiles( { { 0, 0, 0} } );
+        //tileManager->requestTiles( { { 0, 0, 0} , { 1, 0 ,0 }, { 1, 0 ,1 }, { 1, 1 ,0 }, { 1, 1 ,1 } } );
+        tileManager->requestTiles( { { 0, 0, 0} , { 1, 0 ,0 }, { 1, 0 ,1 }, { 1, 1 ,0 }, { 1, 1 ,1 },
+            { 2, 0, 0 }, { 2, 0 , 1 }, { 2, 0 ,2 }, { 2, 0, 3 },
+            { 2, 1, 0 }, { 2, 1 , 1 }, { 2, 1 ,2 }, { 2, 1, 3 },
+            { 2, 2, 0 }, { 2, 2 , 1 }, { 2, 2 ,2 }, { 2, 2, 3 },
+            { 2, 3, 0 }, { 2, 3 , 1 }, { 2, 3 ,2 }, { 2, 3, 3 }
+            } );
+    }
 }
 
 
