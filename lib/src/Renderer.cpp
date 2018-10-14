@@ -16,12 +16,17 @@ namespace gv {
 Renderer::Renderer()
 {
     shaderSimple_.reset( new support::Shader( "shaders/simple.vs", "shaders/simple.fs" ) );
+    shaderTexture_.reset( new support::Shader( "shaders/texture.vs", "shaders/texture.fs" ) );
 
-    if ( !shaderSimple_->isValid() )
+    if ( !shaderSimple_->isValid() || !shaderTexture_->isValid() )
+    {
         throw std::logic_error( "Shader initialization failed!" );
+    }
 
     ssProj_ = shaderSimple_->uniformLocation( "proj" );
     ssColor_ = shaderSimple_->uniformLocation( "colorIn" );
+    stProj_ = shaderTexture_->uniformLocation( "proj" );
+    stSample_ = shaderTexture_->uniformLocation( "sample" );
 }
 
 
@@ -44,13 +49,38 @@ void Renderer::render()
 
     const auto proj = *optProjection;
 
+    shaderTexture_->use();
+    glUniformMatrix4fv( stProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
+
+    {   // Map tiles
+        boost::optional<std::tuple<GLuint, GLuint, GLsizei>> optMapTiles = renderMapTiles();
+
+        if ( optMapTiles )
+        {
+            std::tuple<GLuint, GLuint, GLsizei> params = *optMapTiles;
+            const auto vao = std::get<0>( params );
+            const auto tex = std::get<1>( params );
+            const auto num = std::get<2>( params );
+
+            if ( num > 0 )
+            {
+                glBindVertexArray( vao );
+                glActiveTexture( GL_TEXTURE0 );
+                glBindTexture( GL_TEXTURE_2D, tex );
+                //glDrawArrays( GL_TRIANGLES, 0, num );
+                glBindTexture( GL_TEXTURE_2D, 0 );
+                glBindVertexArray( 0 );
+            }
+        }
+    }
+
     shaderSimple_->use();
     glUniformMatrix4fv( ssProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
 
     {   // Simple Triangle
         glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
 
-        boost::optional<std::tuple<GLuint, std::size_t>> optSimpleTriangle = renderSimpleTriangle();
+        boost::optional<std::tuple<GLuint, GLsizei>> optSimpleTriangle = renderSimpleTriangle();
 
         if ( optSimpleTriangle )
         {
@@ -62,6 +92,7 @@ void Renderer::render()
             {
                 glBindVertexArray( vao );
                 glDrawArrays( GL_TRIANGLES, 0, num );
+                glBindVertexArray( 0 );
             }
         }
     }
@@ -69,7 +100,7 @@ void Renderer::render()
     {   // Wire Globe
         glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 1.0f, 0.0f, 1.0f ) ) );
 
-        boost::optional<std::tuple<GLuint, std::size_t>> optWireGlobe = renderWireGlobe();
+        boost::optional<std::tuple<GLuint, GLsizei>> optWireGlobe = renderWireGlobe();
 
         if ( optWireGlobe )
         {
@@ -82,6 +113,7 @@ void Renderer::render()
                 glLineWidth( 1.0f );
                 glBindVertexArray( vao );
                 glDrawArrays( GL_LINES, 0, num );
+                glBindVertexArray( 0 );
             }
         }
     }

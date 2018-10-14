@@ -27,13 +27,17 @@ public:
     void render();
 
     boost::signals2::signal<glm::mat4()> getProjection;
-    boost::signals2::signal<std::tuple<GLuint, std::size_t>()> renderSimpleTriangle;
-    boost::signals2::signal<std::tuple<GLuint, std::size_t>()> renderWireGlobe;
+    boost::signals2::signal<std::tuple<GLuint, GLsizei>()> renderSimpleTriangle;
+    boost::signals2::signal<std::tuple<GLuint, GLsizei>()> renderWireGlobe;
+    boost::signals2::signal<std::tuple<GLuint, GLuint, GLsizei>()> renderMapTiles;
 
 private:
     std::unique_ptr<support::Shader> shaderSimple_;
     GLint ssProj_;
     GLint ssColor_;
+    std::unique_ptr<support::Shader> shaderTexture_;
+    GLint stProj_;
+    GLint stSample_;
 };
 
 

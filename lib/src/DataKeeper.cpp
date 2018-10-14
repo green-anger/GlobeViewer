@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <mutex>
@@ -9,12 +10,18 @@
 #include "DataKeeper.h"
 #include "Profiler.h"
 #include "Projector.h"
+#include "stb_image.h"
+#include "ThreadSafePrinter.hpp"
+
+
+using TSP = alt::ThreadSafePrinter<alt::MarkPolicy>;
 
 
 namespace
 {
 
 std::mutex mutexWire;
+std::mutex mutexMap;
 
 }
 
@@ -29,6 +36,7 @@ using namespace support;
 DataKeeper::DataKeeper()
     : numST_( 0 )
     , numWire_( 0 )
+    , numMap_( 0 )
     , rotatedLon_( 0.0 )
     , rotatedLat_( 0.0 )
 {
@@ -59,6 +67,25 @@ DataKeeper::DataKeeper()
     glEnableVertexAttribArray( 0 );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
     glBindVertexArray( 0 );
+
+    glGenVertexArrays( 1, &vaoMap_ );
+    glGenBuffers( 1, &vboMap_ );
+    glBindVertexArray( vaoMap_ );
+    glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
+    glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( GLfloat ), ( void* ) 0 );
+    glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( GLfloat ), ( void* ) ( 2 * sizeof( GLfloat ) ) );
+    glEnableVertexAttribArray( 0 );
+    glEnableVertexAttribArray( 1 );
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    glBindVertexArray( 0 );
+
+    glGenTextures( 1, &texMap_ );
+    glBindTexture( GL_TEXTURE_2D, texMap_ );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 
@@ -172,16 +199,78 @@ void DataKeeper::balanceGlobe()
 }
 
 
-std::tuple<GLuint, std::size_t> DataKeeper::simpleTriangle() const
+void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
+{
+    if ( vec.empty() )
+    {
+        return;
+    }
+
+    auto it = std::find_if( vec.begin(), vec.end(), []( const auto& img )
+    {
+        return img.head == TileHead( 0, 0, 0 );
+    } );
+
+    std::vector<unsigned char> data;
+
+    if ( it != vec.end() )
+    {
+        data = it->data.data;
+    }
+    else
+    {
+        data = vec[0].data.data;
+    }
+
+    { // filling vbo
+        std::vector<GLfloat> vec;
+        vec.reserve( 24 );
+        const GLfloat len = 400.0f;
+        vec = {
+            -len, -len, 0.0f, 0.0f,
+            +len, -len, 1.0f, 0.0f,
+            +len, +len, 1.0f, 1.0f,
+            -len, -len, 0.0f, 0.0f,
+            +len, +len, 1.0f, 1.0f,
+            -len, +len, 0.0f, 1.0f
+        };
+        numMap_ = 6;
+
+        glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
+        glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), &vec[0], GL_STATIC_DRAW );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    }
+
+    int width;
+    int height;
+    int nrChannels;
+    stbi_set_flip_vertically_on_load( true );
+    auto buffer = stbi_load_from_memory( &data[0], data.size(), &width, &height, &nrChannels, 0 );
+    glBindTexture( GL_TEXTURE_2D, texMap_ );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
+    glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    stbi_image_free( buffer );
+}
+
+
+std::tuple<GLuint, GLsizei> DataKeeper::simpleTriangle() const
 {
     return std::make_tuple( vaoST_, numST_ );
 }
 
 
-std::tuple<GLuint, std::size_t> DataKeeper::wireGlobe() const
+std::tuple<GLuint, GLsizei> DataKeeper::wireGlobe() const
 {
     std::lock_guard<std::mutex> lock( mutexWire );
     return std::make_tuple( vaoWire_, numWire_ );
+}
+
+
+std::tuple<GLuint, GLuint, GLsizei> DataKeeper::mapTiles() const
+{
+    std::lock_guard<std::mutex> lock( mutexMap );
+    return std::make_tuple( vaoMap_, texMap_, numMap_ );
 }
 
 

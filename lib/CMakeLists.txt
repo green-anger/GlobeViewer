@@ -30,6 +30,7 @@ set( HDRS
     ${HEADERS_SUPP}/LoadGL.h
     ${HEADERS_SUPP}/Profiler.h
     ${HEADERS_SUPP}/Shader.h
+    ${HEADERS_SUPP}/stb_image.h
     ${HEADERS_SUPP}/ThreadSafePrinter.hpp
     ${HEADERS_TYPE}/Tile.h
     ${HEADERS_TYPE}/TileMap.h
@@ -46,6 +47,7 @@ set( SRCS
     ${SOURCES_SUPP}/FpsCounter.cpp
     ${SOURCES_SUPP}/Profiler.cpp
     ${SOURCES_SUPP}/Shader.cpp
+    ${SOURCES_SUPP}/stb_impl.cpp
 )
 
 include_directories(

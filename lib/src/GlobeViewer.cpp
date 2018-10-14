@@ -99,10 +99,15 @@ void GlobeViewer::Impl::initData()
     renderer->getProjection.connect( std::bind( &Viewport::projection, viewport ) );
     renderer->renderSimpleTriangle.connect( std::bind( &DataKeeper::simpleTriangle, dataKeeper ) );
     renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
+    renderer->renderMapTiles.connect( std::bind( &DataKeeper::mapTiles, dataKeeper ) );
 
-    tileManager->sendTiles.connect( []( const std::vector<TileImage>& vec )
+    tileManager->sendTiles.connect( [this]( const std::vector<TileImage>& vec )
     {
-        std::cout << "For testing purpose only we get " << vec.size() << " tile images" << std::endl;
+        ioc.post( [vec, this]
+        {
+            std::cout << "For testing purpose only we get " << vec.size() << " tile images in thread " << std::this_thread::get_id() << std::endl;
+            dataKeeper->updateTexture( vec );
+        } );
     } );
 
     dataKeeper->init();
@@ -110,7 +115,7 @@ void GlobeViewer::Impl::initData()
     valid = true;
 
     {
-        std::cout << "Requesting some tile images" << std::endl;
+        std::cout << "Requesting some tile images in thread " << std::this_thread::get_id() << std::endl;
         //tileManager->requestTiles( { { 0, 0, 0} } );
         //tileManager->requestTiles( { { 0, 0, 0} , { 1, 0 ,0 }, { 1, 0 ,1 }, { 1, 1 ,0 }, { 1, 1 ,1 } } );
         tileManager->requestTiles( { { 0, 0, 0} , { 1, 0 ,0 }, { 1, 0 ,1 }, { 1, 1 ,0 }, { 1, 1 ,1 },
