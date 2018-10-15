@@ -23,6 +23,7 @@ public:
 
     float unitInMeter() const;
     float meterInPixel() const;
+    int mapZoomLevel( int tileWidth ) const;
 
     glm::mat4 projection() const;
 
@@ -45,7 +46,6 @@ private:
     float meterInPixel_;        //!< meters in one pixel
     float unitInPixel_;         //!< gl units in one pixel
 
-    const float maxOrthoRad_;       //!< maximum Globe radius in Orthographic projection in meters
     const float maxLen_;            //!< maximum Globe diameter plus 20% of it used as free space
     const float minUnitInPixel_;    //!< minimum value of unitInPixel_
     const float maxUnitInPixel_;    //!< maximum value of unitInPixel_

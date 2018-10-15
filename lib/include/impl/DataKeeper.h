@@ -26,7 +26,6 @@ public:
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
     void updateTexture( const std::vector<TileImage>& );
-    int mapZoomLevel( int tileWidth ) const;
 
     std::tuple<GLuint, GLsizei> simpleTriangle() const;
     std::tuple<GLuint, GLsizei> wireGlobe() const;

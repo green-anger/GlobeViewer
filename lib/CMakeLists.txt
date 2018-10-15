@@ -22,6 +22,7 @@ set( SOURCES_SUPP "${SOURCES_ROOT}/support" )
 set( HDRS
     ${HEADERS_ROOT}/GlobeViewer.h
     ${HEADERS_IMPL}/DataKeeper.h
+    ${HEADERS_IMPL}/Defines.h
     ${HEADERS_IMPL}/MapGenerator.h
     ${HEADERS_IMPL}/Projector.h
     ${HEADERS_IMPL}/Renderer.h

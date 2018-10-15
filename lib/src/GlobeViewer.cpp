@@ -107,7 +107,7 @@ void GlobeViewer::Impl::initData()
     renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
     renderer->renderMapTiles.connect( std::bind( &DataKeeper::mapTiles, dataKeeper ) );
 
-    mapGenerator->getMapZoomLevel.connect( std::bind( &DataKeeper::mapZoomLevel, dataKeeper, 256 ) );
+    mapGenerator->getMapZoomLevel.connect( std::bind( &Viewport::mapZoomLevel, viewport, 256 ) );
 
     tileManager->sendTiles.connect( [this]( const std::vector<TileImage>& vec )
     {

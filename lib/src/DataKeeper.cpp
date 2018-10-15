@@ -6,8 +6,6 @@
 #include <stdexcept>
 #include <vector>
 
-#include <iostream>
-
 #include "DataKeeper.h"
 #include "Profiler.h"
 #include "Projector.h"
@@ -200,6 +198,7 @@ void DataKeeper::balanceGlobe()
 {
     projector_->setProjectionAt( 0.0, 0.0 );
     composeWireGlobe();
+    globeRotated();
 }
 
 
@@ -255,32 +254,6 @@ void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
     glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer );
     glBindTexture( GL_TEXTURE_2D, 0 );
     stbi_image_free( buffer );
-}
-
-
-int DataKeeper::mapZoomLevel( int tileWidth ) const
-{
-    float meterInPixel = *getMeterInPixel();
-    double centerLon;
-    double centerLat;
-    projector_->projectionCenter( centerLon, centerLat );
-    double half = meterInPixel * tileWidth / 2;
-    std::array<double, 4> lons;
-    std::array<double, 4> lats;
-    projector_->projectInv( -half, -half, lons[0], lats[0] );
-    projector_->projectInv( -half, +half, lons[1], lats[1] );
-    projector_->projectInv( +half, +half, lons[2], lats[2] );
-    projector_->projectInv( +half, -half, lons[3], lats[3] );
-
-    TSP() << "Projection center at\n"
-        << centerLon << ":" << centerLat << "\n"
-        << "Projectioned tile corners clockwise starting from bottom left\n"
-        << lons[0] << ":" << lats[0] << "\n"
-        << lons[1] << ":" << lats[1] << "\n"
-        << lons[2] << ":" << lats[2] << "\n"
-        << lons[3] << ":" << lats[3] << "\n";
-
-    return 0;
 }
 
 

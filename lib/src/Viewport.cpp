@@ -1,6 +1,8 @@
 ﻿#include <algorithm>
+#include <cmath>
 #include <iostream>
 
+#include "Defines.h"
 #include "Viewport.h"
 
 
@@ -20,8 +22,7 @@ Viewport::Viewport()
     , unitInMeter_( 0.001f ) /* const */
     , meterInPixel_( 1000.0f )
     , unitInPixel_( meterInPixel_ * unitInMeter_ )
-    , maxOrthoRad_( 6378140.0f ) /* const */
-    , maxLen_( maxOrthoRad_ * 2 * 3.5f ) /* const */
+    , maxLen_( defs::earthRadius * 2 * 3.5f ) /* const */
     , minUnitInPixel_( 1.0f ) /* const */
     , maxUnitInPixel_( maxLen_ / 1080 /*pixels*/ * unitInMeter_ ) /* const */
     , zoomStep_( 1.0f ) /* const */
@@ -99,6 +100,17 @@ float Viewport::unitInMeter() const
 float Viewport::meterInPixel() const
 {
     return meterInPixel_;
+}
+
+
+int Viewport::mapZoomLevel( int tileWidth ) const
+{
+    // 2 * earthRadius - length of projected "front side" of the Earth
+    // 2 * earthRadius - length of projected "back side" of the Earth
+    // 2^n - number of tiles in one row (or column, the same) for zoom level n
+    double tileNum = defs::earthRadius * 4 / meterInPixel_ / tileWidth;
+
+    return static_cast<int>( std::round( std::log2( tileNum ) ) );
 }
 
 
