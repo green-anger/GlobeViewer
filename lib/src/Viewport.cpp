@@ -114,6 +114,20 @@ int Viewport::mapZoomLevel( int tileWidth ) const
 }
 
 
+std::tuple<double, double, double, double> Viewport::viewBorderUnits() const
+{
+    return std::make_tuple(
+        unitX_ + panX_, unitX_ + panX_ + unitW_,
+        unitY_ + panY_, unitY_ + panY_ + unitH_ );
+}
+
+
+std::tuple<int, int> Viewport::viewPixelSize() const
+{
+    return std::make_tuple( pixelW_, pixelH_ );
+}
+
+
 glm::mat4 Viewport::projection() const
 {
     return proj_;

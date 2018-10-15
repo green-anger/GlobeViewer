@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tuple>
+
 #include <boost/signals2.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,6 +26,9 @@ public:
     float unitInMeter() const;
     float meterInPixel() const;
     int mapZoomLevel( int tileWidth ) const;
+    /// Returns (-x, +x, -y, +y) in gl units
+    std::tuple<double, double, double, double> viewBorderUnits() const;
+    std::tuple<int, int> viewPixelSize() const;
 
     glm::mat4 projection() const;
 
