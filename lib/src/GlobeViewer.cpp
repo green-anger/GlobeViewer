@@ -11,6 +11,7 @@
 
 #include "DataKeeper.h"
 #include "GlobeViewer.h"
+#include "MapGenerator.h"
 #include "Projector.h"
 #include "Renderer.h"
 #include "TileManager.h"
@@ -38,6 +39,7 @@ public:
     std::function<void()> makeCurrent;
 
     std::shared_ptr<DataKeeper> dataKeeper;
+    std::shared_ptr<MapGenerator> mapGenerator;
     std::shared_ptr<Projector> projector;
     std::shared_ptr<Renderer> renderer;
     std::shared_ptr<TileManager> tileManager;
@@ -85,6 +87,7 @@ bool GlobeViewer::Impl::initGl() const
 void GlobeViewer::Impl::initData()
 {
     dataKeeper.reset( new DataKeeper() );
+    mapGenerator.reset( new MapGenerator() );
     projector.reset( new Projector() );
     renderer.reset( new Renderer() );
     tileManager.reset( new TileManager() );
@@ -95,11 +98,16 @@ void GlobeViewer::Impl::initData()
     dataKeeper->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
     dataKeeper->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
     dataKeeper->getProjector.connect( [this]() -> auto { return projector; } );
+    dataKeeper->globeRotated.connect( std::bind( &MapGenerator::regenerateMap, mapGenerator ) );
+
+    viewport->projectionUpdated.connect( std::bind( &MapGenerator::regenerateMap, mapGenerator ) );
 
     renderer->getProjection.connect( std::bind( &Viewport::projection, viewport ) );
     renderer->renderSimpleTriangle.connect( std::bind( &DataKeeper::simpleTriangle, dataKeeper ) );
     renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
     renderer->renderMapTiles.connect( std::bind( &DataKeeper::mapTiles, dataKeeper ) );
+
+    mapGenerator->getMapZoomLevel.connect( std::bind( &DataKeeper::mapZoomLevel, dataKeeper, 256 ) );
 
     tileManager->sendTiles.connect( [this]( const std::vector<TileImage>& vec )
     {

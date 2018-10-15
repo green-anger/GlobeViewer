@@ -21,7 +21,7 @@ Viewport::Viewport()
     , meterInPixel_( 1000.0f )
     , unitInPixel_( meterInPixel_ * unitInMeter_ )
     , maxOrthoRad_( 6378140.0f ) /* const */
-    , maxLen_( maxOrthoRad_ * 2 * 1.2f ) /* const */
+    , maxLen_( maxOrthoRad_ * 2 * 3.5f ) /* const */
     , minUnitInPixel_( 1.0f ) /* const */
     , maxUnitInPixel_( maxLen_ / 1080 /*pixels*/ * unitInMeter_ ) /* const */
     , zoomStep_( 1.0f ) /* const */
@@ -120,6 +120,7 @@ void Viewport::setProjection()
         unitY_ + panY_, unitY_ + panY_ + unitH_,
         zNear_, zFar_ ) *
         view;
+    projectionUpdated();
 }
 
 

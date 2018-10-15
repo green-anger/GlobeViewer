@@ -26,6 +26,7 @@ public:
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
     void updateTexture( const std::vector<TileImage>& );
+    int mapZoomLevel( int tileWidth ) const;
 
     std::tuple<GLuint, GLsizei> simpleTriangle() const;
     std::tuple<GLuint, GLsizei> wireGlobe() const;
@@ -34,6 +35,7 @@ public:
     boost::signals2::signal<float()> getUnitInMeter;
     boost::signals2::signal<float()> getMeterInPixel;
     boost::signals2::signal<std::shared_ptr<Projector>()> getProjector;
+    boost::signals2::signal<void()> globeRotated;
 
 private:
     void composeWireGlobe();
@@ -42,17 +44,17 @@ private:
 
     std::shared_ptr<Projector> projector_;
 
-    GLuint vaoST_;  //!< vao for Simple Triangle
-    GLuint vboST_;  //!< vbo for Simple Triangle
-    GLsizei numST_;  //!< number of vertices for Simple Triangle
+    GLuint vaoST_;      //!< vao for Simple Triangle
+    GLuint vboST_;      //!< vbo for Simple Triangle
+    GLsizei numST_;     //!< number of vertices for Simple Triangle
 
     GLuint vaoWire_;    //!< vao for wire-frame model of the Globe
     GLuint vboWire_;    //!< vbo for wire-frame model of the Globe
-    GLsizei numWire_;    //!< number of vertices for wire-frame model of the Globe
+    GLsizei numWire_;   //!< number of vertices for wire-frame model of the Globe
     
-    GLuint vaoMap_;    //!< vao for map tiles
-    GLuint vboMap_;    //!< vbo for map tiles
-    GLuint texMap_;    //!< texture for map tiles
+    GLuint vaoMap_;     //!< vao for map tiles
+    GLuint vboMap_;     //!< vbo for map tiles
+    GLuint texMap_;     //!< texture for map tiles
     GLsizei numMap_;    //!< number of vertices for map tiles
 
     double rotatedLon_;

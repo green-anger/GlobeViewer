@@ -22,6 +22,7 @@ set( SOURCES_SUPP "${SOURCES_ROOT}/support" )
 set( HDRS
     ${HEADERS_ROOT}/GlobeViewer.h
     ${HEADERS_IMPL}/DataKeeper.h
+    ${HEADERS_IMPL}/MapGenerator.h
     ${HEADERS_IMPL}/Projector.h
     ${HEADERS_IMPL}/Renderer.h
     ${HEADERS_IMPL}/TileManager.h
@@ -39,6 +40,7 @@ set( HDRS
 set( SRCS
     ${SOURCES_ROOT}/GlobeViewer.cpp
     ${SOURCES_ROOT}/DataKeeper.cpp
+    ${SOURCES_ROOT}/MapGenerator.cpp
     ${SOURCES_ROOT}/Projector.cpp
     ${SOURCES_ROOT}/Renderer.cpp
     ${SOURCES_ROOT}/TileManager.cpp

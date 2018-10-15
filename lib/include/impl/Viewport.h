@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/signals2.hpp>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "LoadGL.h"
@@ -23,6 +25,8 @@ public:
     float meterInPixel() const;
 
     glm::mat4 projection() const;
+
+    boost::signals2::signal<void()> projectionUpdated;
 
 private:
     void setProjection();
