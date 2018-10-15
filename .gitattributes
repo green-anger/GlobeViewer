@@ -1,2 +1,3 @@
 lib/include/support/glad/* linguist-vendored
 lib/src/support/glad/* linguist-vendored
+lib/src/support/stb_image.h linguist-vendored
