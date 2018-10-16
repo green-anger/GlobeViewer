@@ -1,3 +1,5 @@
+lib/include/support/LoadGL.h
 lib/include/support/glad/* linguist-vendored
+lib/include/support/stb_image.h linguist-vendored
 lib/src/support/glad/* linguist-vendored
-lib/src/support/stb_image.h linguist-vendored
+lib/src/support/stb_impl.cpp linguist-vendored
