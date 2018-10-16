@@ -114,6 +114,7 @@ void GlobeViewer::Impl::initData()
     mapGenerator->getViewPixelSize.connect( std::bind( &Viewport::viewPixelSize, viewport ) );
     mapGenerator->getProjectionCenter.connect( [this]() { return projector->projectionCenter(); } );
     mapGenerator->getInvProjection.connect( [this]( double x, double y ) { return projector->projectInv( x, y ); } );
+    mapGenerator->getFwdProjection.connect( [this]( double lon, double lat ) { return projector->projectFwd( lon, lat ); } );
 
     tileManager->sendTiles.connect( [this]( const std::vector<TileImage>& vec )
     {

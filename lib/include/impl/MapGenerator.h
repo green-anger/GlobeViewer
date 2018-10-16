@@ -1,6 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include <boost/signals2.hpp>
+
+#include "type/Tile.h"
 
 
 namespace gv {
@@ -21,9 +25,16 @@ public:
     boost::signals2::signal<std::tuple<int, int>()> getViewPixelSize;
     boost::signals2::signal<std::tuple<double, double>()> getProjectionCenter;
     boost::signals2::signal<std::tuple<bool, double, double>( double, double )> getInvProjection;
+    boost::signals2::signal<std::tuple<bool, double, double>( double, double )> getFwdProjection;
 
 private:
+    int lonToTileX( double lon, int z ) const;
+    int latToTileY( double lat, int z ) const;
+    double tileXToLon( int x, int z ) const;
+    double tileYToLat( int y, int z ) const;
     bool visiblePoint( double& lon, double& lat );
+    std::vector<TileHead> findTilesToProcess( int z, int x, int y );
+    bool tileVisible( TileHead );
 };
 
 
