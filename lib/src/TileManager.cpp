@@ -94,6 +94,8 @@ TileManager::TileManager()
     , hosts_( { "a.tile.openstreetmap.org", "b.tile.openstreetmap.org", "c.tile.openstreetmap.org" } )
     , port_( "80" )
     , curHost_( 0 )
+    , activeRequest_( false )
+    , pendingRequest_( false )
 {
     std::cout << std::this_thread::get_id() << ": TileManager()" << std::endl;
 
@@ -123,6 +125,21 @@ TileManager::~TileManager()
 
 void TileManager::requestTiles( const std::vector<TileHead>& vec )
 {
+    {   // checking states
+        std::lock_guard<std::mutex> lock( mutexState_ );
+
+        if ( activeRequest_ )
+        {
+            pendingRequest_ = true;
+            lastRequest_ = std::move( vec );
+            return;
+        }
+        else
+        {
+            activeRequest_ = true;
+        }
+    }
+    
     vecResult_.clear();
     remains_ = vec.size();
 
@@ -132,6 +149,19 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
         promiseReady_.get_future().wait();
         TSP() << "All jobs are done!";
         sendTiles( vecResult_ );
+
+        std::lock_guard<std::mutex> lock( mutexState_ );
+        activeRequest_ = false;
+
+        if ( pendingRequest_ )
+        {
+            pendingRequest_ = false;
+            // otherwise mutexState_ will be locked twice which is UB
+            ioc_.post( [this] { requestTiles( lastRequest_ ); } );
+            ///\todo this request can arrive later than a new one from outside
+            /// which will make it outdated, some check needs to be added to prevent
+            /// processing of uotdated requests
+        }
     } );
 
     for ( const auto& head : vec )

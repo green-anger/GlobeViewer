@@ -21,6 +21,7 @@ struct TileHead
         z = rhs.z;
         x = rhs.x;
         y = rhs.y;
+        return *this;
     }
 
     TileHead& operator=( TileHead&& rhs )
@@ -28,6 +29,7 @@ struct TileHead
         z = std::move( rhs.z );
         x = std::move( rhs.x );
         y = std::move( rhs.y );
+        return *this;
     }
 
     bool operator==( const TileHead& rhs ) const

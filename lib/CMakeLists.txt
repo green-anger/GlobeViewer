@@ -36,6 +36,7 @@ set( HDRS
     ${HEADERS_SUPP}/ThreadSafePrinter.hpp
     ${HEADERS_TYPE}/Tile.h
     ${HEADERS_TYPE}/TileMap.h
+    ${HEADERS_TYPE}/TileTexture.h
 )
 
 set( SRCS

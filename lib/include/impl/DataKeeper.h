@@ -7,7 +7,7 @@
 #include <boost/signals2.hpp>
 
 #include "LoadGL.h"
-#include "type/Tile.h"
+#include "type/TileTexture.h"
 
 
 namespace gv {
@@ -25,6 +25,8 @@ public:
     void init();
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
+
+    void newTileTexture( const TileTexture& );
     void updateTexture( const std::vector<TileImage>& );
 
     std::tuple<GLuint, GLsizei> simpleTriangle() const;

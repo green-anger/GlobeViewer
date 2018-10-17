@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -47,6 +48,11 @@ private:
     std::mutex mutexResult_;
     std::promise<void> promiseReady_;
     std::atomic<int> remains_;
+
+    std::mutex mutexState_;
+    bool activeRequest_;
+    bool pendingRequest_;
+    std::vector<TileHead> lastRequest_;
 };
 
 

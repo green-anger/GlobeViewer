@@ -202,6 +202,11 @@ void DataKeeper::balanceGlobe()
 }
 
 
+void DataKeeper::newTileTexture( const TileTexture& tt )
+{
+}
+
+
 void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
 {
     if ( vec.empty() )

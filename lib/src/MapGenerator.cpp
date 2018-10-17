@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include "Defines.h"
 #include "MapGenerator.h"
@@ -69,6 +70,8 @@ void MapGenerator::regenerateMap()
     {
         TSP() << head.z << ", " << head.x << ", " << head.y;
     }
+
+    composeTileTexture( tiles );
 }
 
 
@@ -285,6 +288,51 @@ bool MapGenerator::tileVisible( TileHead th )
     }
 
     return false;
+}
+
+
+void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
+{
+    TileTexture tt;
+    tt.tileCount = vec.size();
+    tt.tileFilled = 0;
+    const int numX = std::ceil( std::sqrt( tt.tileCount ) );
+    const int numY = std::ceil( static_cast<double>( tt.tileCount ) / numX );
+    tt.textureSize = std::make_tuple( numX, numY );
+    const int sideX = numX * defs::tileSide;
+    const int sideY = numY * defs::tileSide;
+
+    int row = 0;
+    int col = 0;
+    std::vector<TileHead> tileHeads;
+
+    for ( const auto& head : vec )
+    {
+        tileHeads.emplace_back( head );
+        Tile tile( head );
+        TileBody body;
+        body.lon0 = tileXToLon( head.x, head.z );
+        body.lon1 = tileXToLon( head.x + 1, head.z );
+        body.lat0 = tileYToLat( head.y + 1, head.z );
+        body.lat1 = tileYToLat( head.y, head.z );
+        const float tx = row * defs::tileSide;
+        const float ty = col * defs::tileSide;
+        body.tx0 = tx / static_cast<float>( sideX );
+        body.tx1 = ( tx + defs::tileSide ) / static_cast<float>( sideX );
+        body.ty0 = ty / static_cast<float>( sideY );
+        body.ty1 = ( ty + defs::tileSide ) / static_cast<float>( sideY );
+        tile.body = std::move( body );
+        tt.tiles.emplace_back( std::move( tile ) );
+
+        if ( ++row == numX )
+        {
+            row = 0;
+            ++col;
+        }
+    }
+
+    sendTileTexture( tt );
+    requestTiles( tileHeads );
 }
 
 

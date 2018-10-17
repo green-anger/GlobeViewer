@@ -4,7 +4,7 @@
 
 #include <boost/signals2.hpp>
 
-#include "type/Tile.h"
+#include "type/TileTexture.h"
 
 
 namespace gv {
@@ -26,6 +26,8 @@ public:
     boost::signals2::signal<std::tuple<double, double>()> getProjectionCenter;
     boost::signals2::signal<std::tuple<bool, double, double>( double, double )> getInvProjection;
     boost::signals2::signal<std::tuple<bool, double, double>( double, double )> getFwdProjection;
+    boost::signals2::signal<void( TileTexture )> sendTileTexture;
+    boost::signals2::signal<void( std::vector<TileHead> )> requestTiles;
 
 private:
     int lonToTileX( double lon, int z ) const;
@@ -35,6 +37,7 @@ private:
     bool visiblePoint( double& lon, double& lat );
     std::vector<TileHead> findTilesToProcess( int z, int x, int y );
     bool tileVisible( TileHead );
+    void composeTileTexture( const std::vector<TileHead>& );
 };
 
 
