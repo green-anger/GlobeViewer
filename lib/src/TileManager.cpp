@@ -142,11 +142,12 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
     
     vecResult_.clear();
     remains_ = vec.size();
+    promiseReady_.reset( new std::promise<void> );
 
     ioc_.post( [this]()
     {
         TSP() << "Waiting for all " << remains_ << " jobs done";
-        promiseReady_.get_future().wait();
+        promiseReady_->get_future().wait();
         TSP() << "All jobs are done!";
         sendTiles( vecResult_ );
 
@@ -169,7 +170,7 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
         prepareDir( head );
         ioc_.post( [head, this]()
         {
-            std::make_shared<Session>( ioc_, promiseReady_, remains_, mutexResult_, vecResult_, head )->start();// ->get( hosts_[curHost_], port_ );
+            std::make_shared<Session>( ioc_, *promiseReady_, remains_, mutexResult_, vecResult_, head )->start();// ->get( hosts_[curHost_], port_ );
         } );
     }
 }

@@ -2,6 +2,7 @@
 
 #include <array>
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -46,7 +47,7 @@ private:
 
     std::vector<TileImage> vecResult_;
     std::mutex mutexResult_;
-    std::promise<void> promiseReady_;
+    std::unique_ptr<std::promise<void>> promiseReady_;
     std::atomic<int> remains_;
 
     std::mutex mutexState_;
