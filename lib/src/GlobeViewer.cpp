@@ -1,5 +1,7 @@
+#include <fstream>
 #include <functional>
 #include <future>
+#include <memory>
 #include <stdexcept>
 #include <thread>
 
@@ -11,6 +13,7 @@
 #include "Defines.h"
 #include "GlobeViewer.h"
 #include "MapGenerator.h"
+#include "Profiler.h"
 #include "Projector.h"
 #include "Renderer.h"
 #include "TileManager.h"
@@ -73,6 +76,10 @@ GlobeViewer::Impl::~Impl()
             t.join();
         }
     }
+
+    std::ofstream file( "profile_map.txt", std::ios::out );
+    support::Profiler::printStatistics( file );
+    file.close();
 }
 
 
@@ -156,52 +163,85 @@ GlobeViewer::~GlobeViewer()
 
 bool GlobeViewer::validSetup() const
 {
-    return impl_->valid;
+    return impl_ ? impl_->valid : false;
 }
 
 
 void GlobeViewer::render()
 {
     impl_->ioc.post( [this] {
-        impl_->makeCurrent();
-        impl_->renderer->render();
+        if ( impl_ )
+        {
+            impl_->makeCurrent();
+            impl_->renderer->render();
+        }
     } );
 }
 
 
 void GlobeViewer::resize( int w, int h )
 {
-    impl_->ioc.post( [this, w, h] { impl_->viewport->resize( w, h ); } );
+    impl_->ioc.post( [this, w, h] {
+        if ( impl_ )
+        {
+            impl_->viewport->resize( w, h );
+        }
+    } );
 }
 
 
 void GlobeViewer::move( int x, int y )
 {
-    impl_->ioc.post( [this, x, y] { impl_->viewport->move( x, y ); } );
+    impl_->ioc.post( [this, x, y] {
+        if ( impl_ )
+        {
+            impl_->viewport->move( x, y );
+        }
+    } );
 }
 
 
 void GlobeViewer::zoom( int steps )
 {
-    impl_->ioc.post( [this, steps] { impl_->viewport->zoom( steps ); } );
+    impl_->ioc.post( [this, steps] {
+        if ( impl_ )
+        {
+            impl_->viewport->zoom( steps );
+        }
+    } );
 }
 
 
 void GlobeViewer::centerView()
 {
-    impl_->ioc.post( [this] { impl_->viewport->center(); } );
+    impl_->ioc.post( [this] {
+        if ( impl_ )
+        {
+            impl_->viewport->center();
+        }
+    } );
 }
 
 
 void GlobeViewer::baseState()
 {
-    impl_->ioc.post( [this] { impl_->dataKeeper->balanceGlobe(); } );
+    impl_->ioc.post( [this] {
+        if ( impl_ )
+        {
+            impl_->dataKeeper->balanceGlobe();
+        }
+    } );
 }
 
 
 void GlobeViewer::rotate( int x, int y )
 {
-    impl_->ioc.post( [this, x, y] { impl_->dataKeeper->rotateGlobe( x, y ); } );
+    impl_->ioc.post( [this, x, y] {
+        if ( impl_ )
+        {
+            impl_->dataKeeper->rotateGlobe( x, y );
+        }
+    } );
 }
 
 

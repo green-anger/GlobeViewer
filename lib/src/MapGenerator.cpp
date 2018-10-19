@@ -3,6 +3,7 @@
 
 #include "Defines.h"
 #include "MapGenerator.h"
+#include "Profiler.h"
 #include "ThreadSafePrinter.hpp"
 
 
@@ -11,6 +12,9 @@ using namespace defs;
 
 
 namespace gv {
+
+
+using namespace support;
 
 
 MapGenerator::MapGenerator()
@@ -25,6 +29,8 @@ MapGenerator::~MapGenerator()
 
 void MapGenerator::regenerateMap()
 {
+    Profiler prof( "MapGenerator::regenerateMap" );
+
     double lon;
     double lat;
 
@@ -104,6 +110,8 @@ double MapGenerator::tileYToLat( int y, int z ) const
 
 bool MapGenerator::visiblePoint( double& lon, double& lat )
 {
+    Profiler prof( "MapGenerator::visiblePoint" );
+
     double x0;
     double x1;
     double y0;
@@ -192,6 +200,8 @@ bool MapGenerator::visiblePoint( double& lon, double& lat )
 
 std::vector<TileHead> MapGenerator::findTilesToProcess( int z, int x, int y )
 {
+    Profiler prof( "MapGenerator::findTilesToProcess" );
+
     std::vector<TileHead> res;
     res.emplace_back( z, x, y );
 
@@ -248,6 +258,8 @@ std::vector<TileHead> MapGenerator::findTilesToProcess( int z, int x, int y )
 
 bool MapGenerator::tileVisible( TileHead th )
 {
+    Profiler prof( "MapGenerator::tileVisible" );
+
     double x0;
     double x1;
     double y0;
@@ -293,6 +305,8 @@ bool MapGenerator::tileVisible( TileHead th )
 
 void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
 {
+    Profiler prof( "MapGenerator::composeTileTexture" );
+
     TileTexture tt;
     tt.tileCount = vec.size();
     tt.tileFilled = 0;

@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <fstream>
-#include <mutex>
 #include <stdexcept>
 #include <vector>
 
@@ -15,15 +13,6 @@
 
 
 using TSP = alt::ThreadSafePrinter<alt::MarkPolicy>;
-
-
-namespace
-{
-
-std::mutex mutexWire;
-std::mutex mutexMap;
-
-}
 
 
 namespace gv
@@ -91,9 +80,6 @@ DataKeeper::DataKeeper()
 
 DataKeeper::~DataKeeper()
 {
-    std::ofstream file( "profile_map.txt", std::ios::out );
-    Profiler::printStatistics( file );
-    file.close();
 }
 
 
@@ -205,13 +191,7 @@ void DataKeeper::balanceGlobe()
 
 void DataKeeper::newTileTexture( const TileTexture& tt )
 {
-    int sideX;
-    int sideY;
-    std::tie( sideX, sideY ) = tt.textureSize;
-
-    glBindTexture( GL_TEXTURE_2D, texMap_ );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, sideX, sideY, 0, GL_RGB, GL_UNSIGNED_BYTE, 0 );
-    glBindTexture( GL_TEXTURE_2D, 0 );
+    Profiler prof( "DataKeeper::newTileTexture" );
 
     static const int chunks = 10;
 
@@ -268,6 +248,7 @@ void DataKeeper::newTileTexture( const TileTexture& tt )
                     }
                 }
 
+                //*
                 if ( ind.size() > 2 )
                 {
                     std::vector<GLfloat> vecChunk = {
@@ -287,22 +268,39 @@ void DataKeeper::newTileTexture( const TileTexture& tt )
 
                     std::move( vecChunk.begin(), vecChunk.end(), std::back_inserter( vec ) );
                 }
+                //*/
             }
         }
     }
 
+    //*
     numMap_ = vec.size() / 4;
     tileTexture_ = tt;
+
+    int sideX;
+    int sideY;
+    std::tie( sideX, sideY ) = tt.textureSize;
+
+    glBindTexture( GL_TEXTURE_2D, texMap_ );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, sideX, sideY, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
+    glBindTexture( GL_TEXTURE_2D, 0 );
 
     glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
     glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), vec.empty() ? nullptr : &vec[0], GL_STATIC_DRAW );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    //*/
+
+    //TSP() << "DataKeeper::newTileTexture\n"
+    //    << "tileCount = " << tt.tileCount << "\n"
+    //    << "vec.size() = " << vec.size();
 }
 
 
 void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
 {
-    TSP() << "DataKeeper::updateTexture got " << vec.size() << " tile images";
+    Profiler prof( "DataKeeper::updateTexture" );
+
+    //TSP() << "DataKeeper::updateTexture got " << vec.size() << " tile images";
 
     if ( tileTexture_.tiles.empty() || vec.empty() )
     {
@@ -310,28 +308,13 @@ void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
     }
 
 
-    //std::vector<unsigned char> data = vec[0].data.data;
-    //int w;
-    //int h;
-    //int nrChannels;
-    //stbi_set_flip_vertically_on_load( true );
-    //auto buffer = stbi_load_from_memory( &data[0], data.size(), &w, &h, &nrChannels, 0 );
-    //glBindTexture( GL_TEXTURE_2D, texMap_ );
-    //const auto& texSize = tileTexture_.textureSize;
-    //using std::get;
-    //glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, get<0>( texSize ), get<1>( texSize ), GL_RGB, GL_UNSIGNED_BYTE, buffer );
-    //glBindTexture( GL_TEXTURE_2D, 0 );
-    //stbi_image_free( buffer );
-
-
-    //return;
-
-
     glBindTexture( GL_TEXTURE_2D, texMap_ );
     int width;
     int height;
     int channels;
     stbi_set_flip_vertically_on_load( true );
+    const auto sideX = std::get<0>( tileTexture_.textureSize );
+    const auto sideY = std::get<1>( tileTexture_.textureSize );
 
     for ( const auto& tileImg : vec )
     {
@@ -344,10 +327,8 @@ void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
 
         const auto& body = it->second;
         const auto& data = tileImg.data.data;
-        const auto& texSize = tileTexture_.textureSize;
-        using std::get;
         auto buffer = stbi_load_from_memory( &data[0], data.size(), &width, &height, &channels, 0 );
-        glTexSubImage2D( GL_TEXTURE_2D, 0, body.tx0 * get<0>( texSize ), body.ty0 * get<1>( texSize ),
+        glTexSubImage2D( GL_TEXTURE_2D, 0, body.tx0 * sideX, body.ty0 * sideY,
             defs::tileSide, defs::tileSide, GL_RGB, GL_UNSIGNED_BYTE, buffer );
         stbi_image_free( buffer );
     }
@@ -417,14 +398,12 @@ std::tuple<GLuint, GLsizei> DataKeeper::simpleTriangle() const
 
 std::tuple<GLuint, GLsizei> DataKeeper::wireGlobe() const
 {
-    std::lock_guard<std::mutex> lock( mutexWire );
     return std::make_tuple( vaoWire_, numWire_ );
 }
 
 
 std::tuple<GLuint, GLuint, GLsizei> DataKeeper::mapTiles() const
 {
-    std::lock_guard<std::mutex> lock( mutexMap );
     return std::make_tuple( vaoMap_, texMap_, numMap_ );
 }
 
@@ -501,8 +480,6 @@ void DataKeeper::composeWireGlobe()
             vec.emplace_back( static_cast<GLfloat>( y2 * unitInMeter_ ) );
         }
     }
-
-    std::lock_guard<std::mutex> lock( mutexWire );
 
     glBindBuffer( GL_ARRAY_BUFFER, vboWire_ );
     glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), vec.empty() ? nullptr : &vec[0], GL_STATIC_DRAW );
