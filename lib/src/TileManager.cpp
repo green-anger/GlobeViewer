@@ -2,7 +2,6 @@
 #include <chrono>
 #include <fstream>
 #include <future>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -146,9 +145,9 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
 
     ioc_.post( [this]()
     {
-        TSP() << "Waiting for all " << remains_ << " jobs done";
+        //TSP() << "Waiting for all " << remains_ << " jobs done";
         promiseReady_->get_future().wait();
-        TSP() << "All jobs are done!";
+        //TSP() << "All jobs are done!";
         sendTiles( vecResult_ );
 
         std::lock_guard<std::mutex> lock( mutexState_ );
@@ -229,7 +228,7 @@ TileManager::Session::~Session()
         error( ec, "shutdown" );
     }
 
-    TSP() << "Session destroyed";
+    //TSP() << "Session destroyed";
 }
 
 
@@ -254,7 +253,7 @@ void TileManager::Session::start()
 
         checkRemains();
 
-        TSP() << "Updated tile from cache";
+        //TSP() << "Updated tile from cache";
     }
     else
     {
@@ -354,7 +353,7 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
 
     checkRemains();
 
-    TSP() << "Tile " << tileTarget( tileHead_ ) << " was written!";
+    //TSP() << "Tile " << tileTarget( tileHead_ ) << " was written!";
 }
 
 
@@ -362,7 +361,7 @@ void TileManager::Session::checkRemains()
 {
     if ( --remains_ == 0 )
     {
-        TSP() << "Setting promise";
+        //TSP() << "Setting promise";
         promise_.set_value();
     }
 }

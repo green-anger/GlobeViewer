@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "DataKeeper.h"
+#include "Defines.h"
 #include "Profiler.h"
 #include "Projector.h"
 #include "stb_image.h"
@@ -204,11 +205,156 @@ void DataKeeper::balanceGlobe()
 
 void DataKeeper::newTileTexture( const TileTexture& tt )
 {
+    int sideX;
+    int sideY;
+    std::tie( sideX, sideY ) = tt.textureSize;
+
+    glBindTexture( GL_TEXTURE_2D, texMap_ );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, sideX, sideY, 0, GL_RGB, GL_UNSIGNED_BYTE, 0 );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+
+    static const int chunks = 10;
+
+    std::vector<GLfloat> vec;
+    vec.reserve( 24 * tt.tileCount * chunks );
+
+    for ( const auto& tile : tt.tiles )
+    {
+        const auto& body = tile.second;
+        const double chunkLon = ( body.lon1 - body.lon0 ) / chunks;
+        const double chunkLat = ( body.lat1 - body.lat0 ) / chunks;
+        const float chunkTx = ( body.tx1 - body.tx0 ) / chunks;
+        const float chunkTy = ( body.ty1 - body.ty0 ) / chunks;
+
+        for ( int i = 0; i < chunks; ++i )
+        {
+            double lon[4];
+            lon[0] = body.lon0 + i * chunkLon;
+            lon[1] = body.lon0 + ( i + 1 ) * chunkLon;
+            lon[2] = lon[1];
+            lon[3] = lon[0];
+            float tx[4];
+            tx[0] = body.tx0 + i * chunkTx;
+            tx[1] = body.tx0 + ( i + 1 )* chunkTx;
+            tx[2] = tx[1];
+            tx[3] = tx[0];
+
+            for ( int j = 0; j < chunks; ++j )
+            {
+                double lat[4];
+                lat[0] = body.lat0 + j * chunkLat;
+                lat[1] = lat[0];
+                lat[2] = body.lat0 + ( j + 1 ) * chunkLat;
+                lat[3] = lat[2];
+                float ty[4];
+                ty[0] = body.ty0 + j * chunkTy;
+                ty[1] = ty[0];
+                ty[2] = body.ty0 + ( j + 1 ) * chunkTy;
+                ty[3] = ty[2];
+
+                std::vector<int> ind;
+                GLfloat x[4];
+                GLfloat y[4];
+                double px;  // projected x
+                double py;  // projected y
+
+                for ( int n = 0; n < 4; ++n )
+                {
+                    if ( projector_->projectFwd( lon[n], lat[n], px, py ) )
+                    {
+                        ind.emplace_back( n );
+                        x[n] = static_cast<GLfloat>( px * unitInMeter_ );
+                        y[n] = static_cast<GLfloat>( py * unitInMeter_ );
+                    }
+                }
+
+                if ( ind.size() > 2 )
+                {
+                    std::vector<GLfloat> vecChunk = {
+                        x[ind[0]], y[ind[0]], tx[ind[0]], ty[ind[0]],
+                        x[ind[1]], y[ind[1]], tx[ind[1]], ty[ind[1]],
+                        x[ind[2]], y[ind[2]], tx[ind[2]], ty[ind[2]]
+                    };
+
+                    if ( ind.size() == 4 )
+                    {
+                        vecChunk.insert( vecChunk.end(), {
+                            x[ind[0]], y[ind[0]], tx[ind[0]], ty[ind[0]],
+                            x[ind[2]], y[ind[2]], tx[ind[2]], ty[ind[2]],
+                            x[ind[3]], y[ind[3]], tx[ind[3]], ty[ind[3]] }
+                        );
+                    }
+
+                    std::move( vecChunk.begin(), vecChunk.end(), std::back_inserter( vec ) );
+                }
+            }
+        }
+    }
+
+    numMap_ = vec.size() / 4;
+    tileTexture_ = tt;
+
+    glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
+    glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), vec.empty() ? nullptr : &vec[0], GL_STATIC_DRAW );
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
 }
 
 
 void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
 {
+    TSP() << "DataKeeper::updateTexture got " << vec.size() << " tile images";
+
+    if ( tileTexture_.tiles.empty() || vec.empty() )
+    {
+        return;
+    }
+
+
+    //std::vector<unsigned char> data = vec[0].data.data;
+    //int w;
+    //int h;
+    //int nrChannels;
+    //stbi_set_flip_vertically_on_load( true );
+    //auto buffer = stbi_load_from_memory( &data[0], data.size(), &w, &h, &nrChannels, 0 );
+    //glBindTexture( GL_TEXTURE_2D, texMap_ );
+    //const auto& texSize = tileTexture_.textureSize;
+    //using std::get;
+    //glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, get<0>( texSize ), get<1>( texSize ), GL_RGB, GL_UNSIGNED_BYTE, buffer );
+    //glBindTexture( GL_TEXTURE_2D, 0 );
+    //stbi_image_free( buffer );
+
+
+    //return;
+
+
+    glBindTexture( GL_TEXTURE_2D, texMap_ );
+    int width;
+    int height;
+    int channels;
+    stbi_set_flip_vertically_on_load( true );
+
+    for ( const auto& tileImg : vec )
+    {
+        const auto it = tileTexture_.tiles.find( tileImg.head );
+
+        if ( it == tileTexture_.tiles.end() )
+        {
+            continue;
+        }
+
+        const auto& body = it->second;
+        const auto& data = tileImg.data.data;
+        const auto& texSize = tileTexture_.textureSize;
+        using std::get;
+        auto buffer = stbi_load_from_memory( &data[0], data.size(), &width, &height, &channels, 0 );
+        glTexSubImage2D( GL_TEXTURE_2D, 0, body.tx0 * get<0>( texSize ), body.ty0 * get<1>( texSize ),
+            defs::tileSide, defs::tileSide, GL_RGB, GL_UNSIGNED_BYTE, buffer );
+        stbi_image_free( buffer );
+    }
+
+    glBindTexture( GL_TEXTURE_2D, 0 );
+
+    /*
     if ( vec.empty() )
     {
         return;
@@ -259,6 +405,7 @@ void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
     glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer );
     glBindTexture( GL_TEXTURE_2D, 0 );
     stbi_image_free( buffer );
+    //*/
 }
 
 
@@ -292,12 +439,12 @@ void DataKeeper::composeWireGlobe()
     static const float endLon = 180.0f;
     static const float begLat = -80.0f;
     static const float endLat = 80.0f;
-    static const int lons = std::round( ( endLon - begLon ) / gapLon + 1 );
-    static const int lats = std::round( ( endLat - begLat ) / gapLat + 1 );
+    static const int lons = static_cast<int>( std::round( ( endLon - begLon ) / gapLon + 1 ) );
+    static const int lats = static_cast<int>( std::round( ( endLat - begLat ) / gapLat + 1 ) );
     static const float drawGapLon = 1.0f;
     static const float drawGapLat = 1.0f;
-    static const int drawLons = std::round( ( endLon - begLon ) / drawGapLon + 1 );
-    static const int drawLats = std::round( ( endLat - begLat ) / drawGapLat + 1 );
+    static const int drawLons = static_cast<int>( std::round( ( endLon - begLon ) / drawGapLon + 1 ) );
+    static const int drawLats = static_cast<int>( std::round( ( endLat - begLat ) / drawGapLat + 1 ) );
 
     std::vector<GLfloat> vec;
 

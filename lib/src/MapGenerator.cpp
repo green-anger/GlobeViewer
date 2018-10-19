@@ -30,46 +30,46 @@ void MapGenerator::regenerateMap()
 
     if ( !visiblePoint( lon, lat ) )
     {
-        TSP() << "No visible point!";
+        //TSP() << "No visible point!";
         return;
     }
 
-    TSP() << "Visible point at: " << lon << ":" << lat;
+    //TSP() << "Visible point at: " << lon << ":" << lat;
 
     int mapZoomLevel = *getMapZoomLevel();
     int x = lonToTileX( lon, mapZoomLevel );
     int y = latToTileY( lat, mapZoomLevel );
 
-    TSP() << "zoom, tile: " << mapZoomLevel << ", " << x << ":" << y;
+    //TSP() << "zoom, tile: " << mapZoomLevel << ", " << x << ":" << y;
 
-    TSP() << "Testing for level 0\n"
-        << "0:0 " << tileXToLon( 0, 0 ) << ":" << tileYToLat( 0, 0 ) << "\n"
-        << "1:0 " << tileXToLon( 1, 0 ) << ":" << tileYToLat( 0, 0 ) << "\n"
-        << "0:1 " << tileXToLon( 0, 0 ) << ":" << tileYToLat( 1, 0 ) << "\n"
-        << "1:1 " << tileXToLon( 1, 0 ) << ":" << tileYToLat( 1, 0 ) << "\n"
-        << "Testing for level 1\n"
-        << "0:0 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
-        << "1:0 " << tileXToLon( 1, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
-        << "2:0 " << tileXToLon( 2, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
-        << "3:0 " << tileXToLon( 3, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
-        << "4:0 " << tileXToLon( 4, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
-        << "0:1 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 1, 1 ) << "\n"
-        << "0:2 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 2, 1 ) << "\n"
-        << "0:3 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 3, 1 ) << "\n"
-        << "0:4 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 4, 1 ) << "\n"
-        << "1:1 " << tileXToLon( 1, 1 ) << ":" << tileYToLat( 1, 1 ) << "\n"
-        << "2:2 " << tileXToLon( 2, 1 ) << ":" << tileYToLat( 2, 1 ) << "\n"
-        << "3:3 " << tileXToLon( 3, 1 ) << ":" << tileYToLat( 3, 1 ) << "\n"
-        << "4:4 " << tileXToLon( 4, 1 ) << ":" << tileYToLat( 4, 1 ) << "\n";
+    //TSP() << "Testing for level 0\n"
+    //    << "0:0 " << tileXToLon( 0, 0 ) << ":" << tileYToLat( 0, 0 ) << "\n"
+    //    << "1:0 " << tileXToLon( 1, 0 ) << ":" << tileYToLat( 0, 0 ) << "\n"
+    //    << "0:1 " << tileXToLon( 0, 0 ) << ":" << tileYToLat( 1, 0 ) << "\n"
+    //    << "1:1 " << tileXToLon( 1, 0 ) << ":" << tileYToLat( 1, 0 ) << "\n"
+    //    << "Testing for level 1\n"
+    //    << "0:0 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
+    //    << "1:0 " << tileXToLon( 1, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
+    //    << "2:0 " << tileXToLon( 2, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
+    //    << "3:0 " << tileXToLon( 3, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
+    //    << "4:0 " << tileXToLon( 4, 1 ) << ":" << tileYToLat( 0, 1 ) << "\n"
+    //    << "0:1 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 1, 1 ) << "\n"
+    //    << "0:2 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 2, 1 ) << "\n"
+    //    << "0:3 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 3, 1 ) << "\n"
+    //    << "0:4 " << tileXToLon( 0, 1 ) << ":" << tileYToLat( 4, 1 ) << "\n"
+    //    << "1:1 " << tileXToLon( 1, 1 ) << ":" << tileYToLat( 1, 1 ) << "\n"
+    //    << "2:2 " << tileXToLon( 2, 1 ) << ":" << tileYToLat( 2, 1 ) << "\n"
+    //    << "3:3 " << tileXToLon( 3, 1 ) << ":" << tileYToLat( 3, 1 ) << "\n"
+    //    << "4:4 " << tileXToLon( 4, 1 ) << ":" << tileYToLat( 4, 1 ) << "\n";
 
     auto tiles = findTilesToProcess( mapZoomLevel, x, y );
     
-    TSP() << "Visible tiles [" << tiles.size() << "]:";
+    //TSP() << "Visible tiles [" << tiles.size() << "]:";
 
-    for ( const auto& head : tiles )
-    {
-        TSP() << head.z << ", " << head.x << ", " << head.y;
-    }
+    //for ( const auto& head : tiles )
+    //{
+    //    TSP() << head.z << ", " << head.x << ", " << head.y;
+    //}
 
     composeTileTexture( tiles );
 }
@@ -110,12 +110,12 @@ bool MapGenerator::visiblePoint( double& lon, double& lat )
     double y1;
     std::tie( x0, x1, y0, y1 ) = *getViewBorder();
     float unitInMeter = *getUnitInMeter();
-    static const float unitLimit = defs::earthRadius * unitInMeter;
+    static const float unitLimit = static_cast<float>( defs::earthRadius * unitInMeter );
 
-    TSP() << "Borders in units:\n"
-        << "x: " << x0 << ":" << x1 << "\n"
-        << "y: " << y0 << ":" << y1 << "\n"
-        << "unitLimit = " << unitLimit;
+    //TSP() << "Borders in units:\n"
+    //    << "x: " << x0 << ":" << x1 << "\n"
+    //    << "y: " << y0 << ":" << y1 << "\n"
+    //    << "unitLimit = " << unitLimit;
 
     if ( unitLimit <= x0 || x1 <= -unitLimit || unitLimit <= y0 || y1 <= -unitLimit )
     {
@@ -196,7 +196,7 @@ std::vector<TileHead> MapGenerator::findTilesToProcess( int z, int x, int y )
     res.emplace_back( z, x, y );
 
     std::vector<TileHead> vec[2];
-    const int maxInd = std::pow( 2, z ) - 1;
+    const int maxInd = static_cast<int>( std::pow( 2, z ) - 1 );
     int curr = 0;
     int next = 0;
     vec[0].emplace_back( z, x, y );
@@ -207,7 +207,7 @@ std::vector<TileHead> MapGenerator::findTilesToProcess( int z, int x, int y )
         next = curr == 0 ? 1 : 0;
         vec[next].clear();
 
-        for ( int i = 0; i < vec[curr].size(); ++i )
+        for ( std::size_t i = 0; i < vec[curr].size(); ++i )
         {
             const auto& head = vec[curr][i];
             decltype( res ) adj;
@@ -296,11 +296,11 @@ void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
     TileTexture tt;
     tt.tileCount = vec.size();
     tt.tileFilled = 0;
-    const int numX = std::ceil( std::sqrt( tt.tileCount ) );
-    const int numY = std::ceil( static_cast<double>( tt.tileCount ) / numX );
-    tt.textureSize = std::make_tuple( numX, numY );
+    const int numX = static_cast<int>( std::ceil( std::sqrt( tt.tileCount ) ) );
+    const int numY = static_cast<int>( std::ceil( static_cast<double>( tt.tileCount ) / numX ) );
     const int sideX = numX * defs::tileSide;
     const int sideY = numY * defs::tileSide;
+    tt.textureSize = std::make_tuple( sideX, sideY );
 
     int row = 0;
     int col = 0;
@@ -309,20 +309,18 @@ void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
     for ( const auto& head : vec )
     {
         tileHeads.emplace_back( head );
-        Tile tile( head );
         TileBody body;
         body.lon0 = tileXToLon( head.x, head.z );
         body.lon1 = tileXToLon( head.x + 1, head.z );
         body.lat0 = tileYToLat( head.y + 1, head.z );
         body.lat1 = tileYToLat( head.y, head.z );
-        const float tx = row * defs::tileSide;
-        const float ty = col * defs::tileSide;
+        const float tx = static_cast<float>( row * defs::tileSide );
+        const float ty = static_cast<float>( col * defs::tileSide );
         body.tx0 = tx / static_cast<float>( sideX );
         body.tx1 = ( tx + defs::tileSide ) / static_cast<float>( sideX );
         body.ty0 = ty / static_cast<float>( sideY );
         body.ty1 = ( ty + defs::tileSide ) / static_cast<float>( sideY );
-        tile.body = std::move( body );
-        tt.tiles.emplace_back( std::move( tile ) );
+        tt.tiles.emplace( std::move( head ), std::move( body ) );
 
         if ( ++row == numX )
         {

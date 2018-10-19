@@ -1,5 +1,4 @@
 ﻿#include <exception>
-#include <iostream>
 #include <thread>
 #include <tuple>
 
@@ -67,7 +66,7 @@ void Renderer::render()
                 glBindVertexArray( vao );
                 glActiveTexture( GL_TEXTURE0 );
                 glBindTexture( GL_TEXTURE_2D, tex );
-                //glDrawArrays( GL_TRIANGLES, 0, num );
+                glDrawArrays( GL_TRIANGLES, 0, num );
                 glBindTexture( GL_TEXTURE_2D, 0 );
                 glBindVertexArray( 0 );
             }

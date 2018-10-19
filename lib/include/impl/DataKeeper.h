@@ -7,6 +7,7 @@
 #include <boost/signals2.hpp>
 
 #include "LoadGL.h"
+#include "type/TileMap.h"
 #include "type/TileTexture.h"
 
 
@@ -57,6 +58,7 @@ private:
     GLuint vboMap_;     //!< vbo for map tiles
     GLuint texMap_;     //!< texture for map tiles
     GLsizei numMap_;    //!< number of vertices for map tiles
+    TileTexture tileTexture_;
 
     double rotatedLon_;
     double rotatedLat_;
