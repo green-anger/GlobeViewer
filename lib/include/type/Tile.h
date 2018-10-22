@@ -49,7 +49,8 @@ struct TileBody
     float ty0;      //!< texture y coordinate of left-bottom corner
     float tx1;      //!< texture x coordinate of right-top corner
     float ty1;      //!< texture y coordinate of right-top corner
-    bool visible;   //!< currently visible
+    int row;        //!< row number in texture
+    int col;        //!< column number in texture
 
     TileBody() = default;
     TileBody( const TileBody& rhs ) = default;
@@ -65,7 +66,8 @@ struct TileBody
         ty0 = rhs.ty0;
         tx1 = rhs.tx1;
         ty1 = rhs.ty1;
-        visible = rhs.visible;
+        row = rhs.row;
+        col = rhs.col;
         return *this;
     }
 
@@ -79,7 +81,8 @@ struct TileBody
         ty0 = std::move( rhs.ty0 );
         tx1 = std::move( rhs.tx1 );
         ty1 = std::move( rhs.ty1 );
-        visible = std::move( rhs.visible );
+        row = std::move( rhs.row );
+        col = std::move( rhs.col );
         return *this;
     }
 };

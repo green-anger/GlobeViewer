@@ -1,6 +1,5 @@
 ﻿#include <algorithm>
 #include <cmath>
-#include <iostream>
 
 #include "Defines.h"
 #include "Viewport.h"
@@ -64,6 +63,7 @@ void Viewport::move( int x, int y )
 
 void Viewport::zoom( int steps )
 {
+    const auto prevUnitInPixel = unitInPixel_;
     const int sign = steps > 0 ? 1 : -1;
 
     for ( int i = 0; i < std::abs( steps ); ++i )
@@ -73,6 +73,12 @@ void Viewport::zoom( int steps )
 
     unitInPixel_ = std::min( unitInPixel_, maxUnitInPixel_ );
     unitInPixel_ = std::max( unitInPixel_, minUnitInPixel_ );
+
+    if ( prevUnitInPixel == unitInPixel_)
+    {
+        return;
+    }
+
     meterInPixel_ = unitInPixel_ / unitInMeter_;
     const auto prevUnitW = unitW_;
     const auto prevUnitH = unitH_;
@@ -88,6 +94,22 @@ void Viewport::center()
 {
     panX_ = panY_ = 0;
     setProjection();
+}
+
+
+ViewData Viewport::viewData() const
+{
+    ViewData vd;
+    vd.unitInMeter = unitInMeter_;
+    vd.meterInPixel = meterInPixel_;
+    vd.mapZoomLevel = mapZoomLevel( defs::tileSide );
+    vd.glX0 = unitX_ + panX_;
+    vd.glX1 = unitX_ + panX_ + unitW_;
+    vd.glY0 = unitY_ + panY_;
+    vd.glY1 = unitY_ + panY_ + unitH_;
+    vd.pixWidth = pixelW_;
+    vd.pixHeight = pixelH_;
+    return vd;
 }
 
 
@@ -146,21 +168,7 @@ void Viewport::setProjection()
         unitY_ + panY_, unitY_ + panY_ + unitH_,
         zNear_, zFar_ ) *
         view;
-    projectionUpdated();
-}
-
-
-void Viewport::testPrint() const
-{
-    std::cout
-        << "pixelW_ = " << pixelW_ << "\n"
-        << "pixelH_ = " << pixelH_ << "\n"
-        << "unitW_ = " << unitW_ << "\n"
-        << "unitH_ = " << unitH_ << "\n"
-        << "unitX_ = " << unitX_ << "\n"
-        << "unitY_ = " << unitY_ << "\n"
-        << "unitInPixel_ = " << unitInPixel_ << "\n"
-        << std::endl;
+    viewUpdated( viewData() );
 }
 
 

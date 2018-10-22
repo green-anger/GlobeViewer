@@ -111,6 +111,76 @@ void DataKeeper::init()
     }
 
     composeWireGlobe();
+
+    //////// TEST ///////////////////////////
+    /*
+    const GLfloat side = 600.0f;
+    const std::vector<GLfloat> verts =
+    {
+        -side, -side, 0.0f, 0.0f,
+        +side, -side, 1.0f, 0.0f,
+        +side, +side, 1.0f, 1.0f,
+        -side, -side, 0.0f, 0.0f,
+        +side, +side, 1.0f, 1.0f,
+        -side, +side, 0.0f, 1.0f
+    };
+    numMap_ = 6;
+
+    glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( GLfloat ) * verts.size(), &verts[0], GL_STATIC_DRAW );
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+    int w;
+    int h;
+    int chans;
+    stbi_set_flip_vertically_on_load( true );
+
+    glBindTexture( GL_TEXTURE_2D, texMap_ );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0 );
+    stbi_uc* buffer[4] = {
+        stbi_load( "cache/1/0/0.png", &w, &h, &chans, 0 ),
+        stbi_load( "cache/1/0/1.png", &w, &h, &chans, 0 ),
+        stbi_load( "cache/1/1/0.png", &w, &h, &chans, 0 ),
+        stbi_load( "cache/1/1/1.png", &w, &h, &chans, 0 )
+    };
+
+    TSP() << "Buffer sizes:\n"
+        << "buffer[0] = " << strlen( (const char*) buffer[0] ) << "\n"
+        << "buffer[1] = " << strlen( (const char*) buffer[1] ) << "\n"
+        << "buffer[2] = " << strlen( (const char*) buffer[2] ) << "\n"
+        << "buffer[3] = " << strlen( (const char*) buffer[3] ) << "\n";
+
+    //glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[1] );
+    //glTexSubImage2D( GL_TEXTURE_2D, 0, 256, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[3] );
+    //glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 256, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[0] );
+    //glTexSubImage2D( GL_TEXTURE_2D, 0, 256, 256, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[2] );
+
+    std::vector<unsigned char> vec;
+    const std::size_t len = strlen( ( const char* ) buffer[0] );
+    const int cols = 2;
+    const int chan = 3;
+    const std::size_t texW = defs::tileSide * chan * cols;
+    vec.resize( 4 * len, 0 );
+    for ( int i = 0; i < defs::tileSide; ++i )
+        memcpy( &vec[( 0 * defs::tileSide + i ) * texW + 0 * defs::tileSide * chan], &buffer[1][i * defs::tileSide * chan], defs::tileSide * chan );
+    for ( int i = 0; i < defs::tileSide; ++i )
+        memcpy( &vec[( 0 * defs::tileSide + i ) * texW + 1 * defs::tileSide * chan], &buffer[3][i * defs::tileSide * chan], defs::tileSide * chan );
+    for ( int i = 0; i < defs::tileSide; ++i )
+        memcpy( &vec[( 1 * defs::tileSide + i ) * texW + 0 * defs::tileSide * chan], &buffer[0][i * defs::tileSide * chan], defs::tileSide * chan );
+    for ( int i = 0; i < defs::tileSide; ++i )
+        memcpy( &vec[( 1 * defs::tileSide + i ) * texW + 1 * defs::tileSide * chan], &buffer[2][i * defs::tileSide * chan], defs::tileSide * chan );
+
+    //memcpy( &vec[0 * len], buffer[1], len );
+    //memcpy( &vec[1 * len], buffer[3], len );
+    //memcpy( &vec[2 * len], buffer[0], len );
+    //memcpy( &vec[3 * len], buffer[2], len );
+
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, vec.data() );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+
+    mapReady( true );
+    //*/
+    //////// END OF TEST ////////////////////
 }
 
 
@@ -189,204 +259,18 @@ void DataKeeper::balanceGlobe()
 }
 
 
-void DataKeeper::newTileTexture( const TileTexture& tt )
+void DataKeeper::updateTexture( std::vector<GLfloat> vecVbo, int w, int h, std::vector<unsigned char> vecData )
 {
-    Profiler prof( "DataKeeper::newTileTexture" );
-
-    static const int chunks = 10;
-
-    std::vector<GLfloat> vec;
-    vec.reserve( 24 * tt.tileCount * chunks );
-
-    for ( const auto& tile : tt.tiles )
-    {
-        const auto& body = tile.second;
-        const double chunkLon = ( body.lon1 - body.lon0 ) / chunks;
-        const double chunkLat = ( body.lat1 - body.lat0 ) / chunks;
-        const float chunkTx = ( body.tx1 - body.tx0 ) / chunks;
-        const float chunkTy = ( body.ty1 - body.ty0 ) / chunks;
-
-        for ( int i = 0; i < chunks; ++i )
-        {
-            double lon[4];
-            lon[0] = body.lon0 + i * chunkLon;
-            lon[1] = body.lon0 + ( i + 1 ) * chunkLon;
-            lon[2] = lon[1];
-            lon[3] = lon[0];
-            float tx[4];
-            tx[0] = body.tx0 + i * chunkTx;
-            tx[1] = body.tx0 + ( i + 1 )* chunkTx;
-            tx[2] = tx[1];
-            tx[3] = tx[0];
-
-            for ( int j = 0; j < chunks; ++j )
-            {
-                double lat[4];
-                lat[0] = body.lat0 + j * chunkLat;
-                lat[1] = lat[0];
-                lat[2] = body.lat0 + ( j + 1 ) * chunkLat;
-                lat[3] = lat[2];
-                float ty[4];
-                ty[0] = body.ty0 + j * chunkTy;
-                ty[1] = ty[0];
-                ty[2] = body.ty0 + ( j + 1 ) * chunkTy;
-                ty[3] = ty[2];
-
-                std::vector<int> ind;
-                GLfloat x[4];
-                GLfloat y[4];
-                double px;  // projected x
-                double py;  // projected y
-
-                for ( int n = 0; n < 4; ++n )
-                {
-                    if ( projector_->projectFwd( lon[n], lat[n], px, py ) )
-                    {
-                        ind.emplace_back( n );
-                        x[n] = static_cast<GLfloat>( px * unitInMeter_ );
-                        y[n] = static_cast<GLfloat>( py * unitInMeter_ );
-                    }
-                }
-
-                //*
-                if ( ind.size() > 2 )
-                {
-                    std::vector<GLfloat> vecChunk = {
-                        x[ind[0]], y[ind[0]], tx[ind[0]], ty[ind[0]],
-                        x[ind[1]], y[ind[1]], tx[ind[1]], ty[ind[1]],
-                        x[ind[2]], y[ind[2]], tx[ind[2]], ty[ind[2]]
-                    };
-
-                    if ( ind.size() == 4 )
-                    {
-                        vecChunk.insert( vecChunk.end(), {
-                            x[ind[0]], y[ind[0]], tx[ind[0]], ty[ind[0]],
-                            x[ind[2]], y[ind[2]], tx[ind[2]], ty[ind[2]],
-                            x[ind[3]], y[ind[3]], tx[ind[3]], ty[ind[3]] }
-                        );
-                    }
-
-                    std::move( vecChunk.begin(), vecChunk.end(), std::back_inserter( vec ) );
-                }
-                //*/
-            }
-        }
-    }
-
-    //*
-    numMap_ = vec.size() / 4;
-    tileTexture_ = tt;
-
-    int sideX;
-    int sideY;
-    std::tie( sideX, sideY ) = tt.textureSize;
-
     glBindTexture( GL_TEXTURE_2D, texMap_ );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, sideX, sideY, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, vecData.empty() ? nullptr : vecData.data() );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
-    glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), vec.empty() ? nullptr : &vec[0], GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, vecVbo.size() * sizeof( GLfloat ), vecVbo.empty() ? nullptr : &vecVbo[0], GL_STATIC_DRAW );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    //*/
+    numMap_ = vecVbo.size() / 4;
 
-    //TSP() << "DataKeeper::newTileTexture\n"
-    //    << "tileCount = " << tt.tileCount << "\n"
-    //    << "vec.size() = " << vec.size();
-}
-
-
-void DataKeeper::updateTexture( const std::vector<TileImage>& vec )
-{
-    Profiler prof( "DataKeeper::updateTexture" );
-
-    //TSP() << "DataKeeper::updateTexture got " << vec.size() << " tile images";
-
-    if ( tileTexture_.tiles.empty() || vec.empty() )
-    {
-        return;
-    }
-
-
-    glBindTexture( GL_TEXTURE_2D, texMap_ );
-    int width;
-    int height;
-    int channels;
-    stbi_set_flip_vertically_on_load( true );
-    const auto sideX = std::get<0>( tileTexture_.textureSize );
-    const auto sideY = std::get<1>( tileTexture_.textureSize );
-
-    for ( const auto& tileImg : vec )
-    {
-        const auto it = tileTexture_.tiles.find( tileImg.head );
-
-        if ( it == tileTexture_.tiles.end() )
-        {
-            continue;
-        }
-
-        const auto& body = it->second;
-        const auto& data = tileImg.data.data;
-        auto buffer = stbi_load_from_memory( &data[0], data.size(), &width, &height, &channels, 0 );
-        glTexSubImage2D( GL_TEXTURE_2D, 0, body.tx0 * sideX, body.ty0 * sideY,
-            defs::tileSide, defs::tileSide, GL_RGB, GL_UNSIGNED_BYTE, buffer );
-        stbi_image_free( buffer );
-    }
-
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    /*
-    if ( vec.empty() )
-    {
-        return;
-    }
-
-    auto it = std::find_if( vec.begin(), vec.end(), []( const auto& img )
-    {
-        return img.head == TileHead( 0, 0, 0 );
-    } );
-
-    std::vector<unsigned char> data;
-
-    if ( it != vec.end() )
-    {
-        data = it->data.data;
-    }
-    else
-    {
-        data = vec[0].data.data;
-    }
-
-    { // filling vbo
-        std::vector<GLfloat> vec;
-        vec.reserve( 24 );
-        const GLfloat len = 400.0f;
-        vec = {
-            -len, -len, 0.0f, 0.0f,
-            +len, -len, 1.0f, 0.0f,
-            +len, +len, 1.0f, 1.0f,
-            -len, -len, 0.0f, 0.0f,
-            +len, +len, 1.0f, 1.0f,
-            -len, +len, 0.0f, 1.0f
-        };
-        numMap_ = 6;
-
-        glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
-        glBufferData( GL_ARRAY_BUFFER, vec.size() * sizeof( GLfloat ), &vec[0], GL_STATIC_DRAW );
-        glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    }
-
-    int width;
-    int height;
-    int nrChannels;
-    stbi_set_flip_vertically_on_load( true );
-    auto buffer = stbi_load_from_memory( &data[0], data.size(), &width, &height, &nrChannels, 0 );
-    glBindTexture( GL_TEXTURE_2D, texMap_ );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
-    glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-    stbi_image_free( buffer );
-    //*/
+    mapReady( true );
 }
 
 

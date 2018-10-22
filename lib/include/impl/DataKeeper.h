@@ -27,8 +27,7 @@ public:
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
 
-    void newTileTexture( const TileTexture& );
-    void updateTexture( const std::vector<TileImage>& );
+    void updateTexture( std::vector<GLfloat> /*vbo*/, int /*texW*/, int /*texH*/, std::vector<unsigned char> /*data*/ );
 
     std::tuple<GLuint, GLsizei> simpleTriangle() const;
     std::tuple<GLuint, GLsizei> wireGlobe() const;
@@ -38,6 +37,7 @@ public:
     boost::signals2::signal<float()> getMeterInPixel;
     boost::signals2::signal<std::shared_ptr<Projector>()> getProjector;
     boost::signals2::signal<void()> globeRotated;
+    boost::signals2::signal<void( bool )> mapReady;
 
 private:
     void composeWireGlobe();

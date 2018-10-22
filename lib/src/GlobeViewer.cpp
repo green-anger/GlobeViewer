@@ -104,35 +104,31 @@ void GlobeViewer::Impl::initData()
     dataKeeper->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
     dataKeeper->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
     dataKeeper->getProjector.connect( [this]() -> auto { return projector; } );
-    dataKeeper->globeRotated.connect( std::bind( &MapGenerator::regenerateMap, mapGenerator ) );
+    dataKeeper->globeRotated.connect( std::bind( &MapGenerator::updateGlobe, mapGenerator ) );
+    dataKeeper->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, ph::_1 ) );
 
-    viewport->projectionUpdated.connect( std::bind( &MapGenerator::regenerateMap, mapGenerator ) );
+    viewport->viewUpdated.connect( std::bind( &MapGenerator::updateViewData, mapGenerator, ph::_1 ) );
 
     renderer->getProjection.connect( std::bind( &Viewport::projection, viewport ) );
     renderer->renderSimpleTriangle.connect( std::bind( &DataKeeper::simpleTriangle, dataKeeper ) );
     renderer->renderWireGlobe.connect( std::bind( &DataKeeper::wireGlobe, dataKeeper ) );
     renderer->renderMapTiles.connect( std::bind( &DataKeeper::mapTiles, dataKeeper ) );
 
-    mapGenerator->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
-    mapGenerator->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
-    mapGenerator->getMapZoomLevel.connect( std::bind( &Viewport::mapZoomLevel, viewport, defs::tileSide ) );
-    mapGenerator->getViewBorder.connect( std::bind( &Viewport::viewBorderUnits, viewport ) );
-    mapGenerator->getViewPixelSize.connect( std::bind( &Viewport::viewPixelSize, viewport ) );
-    mapGenerator->getProjectionCenter.connect( [this]() { return projector->projectionCenter(); } );
-    mapGenerator->getInvProjection.connect( [this]( double x, double y ) { return projector->projectInv( x, y ); } );
-    mapGenerator->getFwdProjection.connect( [this]( double lon, double lat ) { return projector->projectFwd( lon, lat ); } );
-    mapGenerator->sendTileTexture.connect( std::bind( &DataKeeper::newTileTexture, dataKeeper, ph::_1 ) );
+    mapGenerator->getProjector.connect( [this]() -> auto { return projector; } );
     mapGenerator->requestTiles.connect( std::bind( &TileManager::requestTiles, tileManager, ph::_1 ) );
-
-    tileManager->sendTiles.connect( [this]( const std::vector<TileImage>& vec )
+    mapGenerator->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, ph::_1 ) );
+    mapGenerator->updateMapTexture.connect( [this]( std::vector<GLfloat> vbo, int w, int h, std::vector<unsigned char> data )
     {
-        ioc.post( [vec, this]
+        ioc.post( [vbo, w, h, data, this]
         {
-            dataKeeper->updateTexture( vec );
+            dataKeeper->updateTexture( vbo, w, h, data );
         } );
     } );
 
+    tileManager->sendTiles.connect( std::bind( &MapGenerator::getTiles, mapGenerator, ph::_1 ) );
+
     dataKeeper->init();
+    mapGenerator->init( viewport->viewData() );
 
     valid = true;
 }

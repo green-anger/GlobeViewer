@@ -13,6 +13,7 @@ namespace gv {
 
 
 Renderer::Renderer()
+    : mapReady_( false )
 {
     shaderSimple_.reset( new support::Shader( "shaders/simple.vs", "shaders/simple.fs" ) );
     shaderTexture_.reset( new support::Shader( "shaders/texture.vs", "shaders/texture.fs" ) );
@@ -51,6 +52,7 @@ void Renderer::render()
     shaderTexture_->use();
     glUniformMatrix4fv( stProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
 
+    if ( mapReady_ )
     {   // Map tiles
         boost::optional<std::tuple<GLuint, GLuint, GLsizei>> optMapTiles = renderMapTiles();
 
@@ -76,6 +78,7 @@ void Renderer::render()
     shaderSimple_->use();
     glUniformMatrix4fv( ssProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
 
+    /*
     {   // Simple Triangle
         glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
 
@@ -95,6 +98,7 @@ void Renderer::render()
             }
         }
     }
+    //*/
 
     {   // Wire Globe
         glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 1.0f, 0.0f, 1.0f ) ) );
@@ -116,6 +120,12 @@ void Renderer::render()
             }
         }
     }
+}
+
+
+void Renderer::setMapReady( bool val )
+{
+    mapReady_ = val;
 }
 
 

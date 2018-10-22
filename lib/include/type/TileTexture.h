@@ -12,7 +12,7 @@ namespace gv {
 
 struct TileTexture
 {
-    std::tuple<int, int> textureSize;   //!< (width, height) of tile texture in tile numbers
+    std::tuple<int, int> textureSize;   //!< (rows, cols) of tile texture in tile numbers
     int tileCount;                      //!< total number of tiles
     int tileFilled;                     //!< number of tiles with TileData filled (got its image)
     TileMap tiles;                      //!< tiles themselves
