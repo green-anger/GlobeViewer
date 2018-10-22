@@ -25,6 +25,7 @@ public:
     ~Renderer();
 
     void render();
+    void setMapReady( bool );
 
     boost::signals2::signal<glm::mat4()> getProjection;
     boost::signals2::signal<std::tuple<GLuint, GLsizei>()> renderSimpleTriangle;
@@ -38,6 +39,7 @@ private:
     std::unique_ptr<support::Shader> shaderTexture_;
     GLint stProj_;
     GLint stSample_;
+    bool mapReady_;
 };
 
 

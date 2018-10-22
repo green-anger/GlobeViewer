@@ -1,6 +1,12 @@
+#include <mutex>
 #include <sstream>
 
 #include <Profiler.h>
+
+
+namespace {
+std::mutex mutexMap;
+}
 
 
 namespace gv {
@@ -38,6 +44,8 @@ void Profiler::printStatistics( std::ostream& os )
 
 void Profiler::getStatistics( std::ostream& os )
 {
+    std::lock_guard<std::mutex> lock( mutexMap );
+
     if ( map_.empty() )
     {
         os
@@ -76,6 +84,8 @@ std::string Profiler::getStatistics()
 
 void Profiler::addStatistic( const std::string& name, int milli )
 {
+    std::lock_guard<std::mutex> lock( mutexMap );
+
     auto it = map_.find( name );
     if ( it == map_.end() )
     {

@@ -37,6 +37,7 @@ set( HDRS
     ${HEADERS_TYPE}/Tile.h
     ${HEADERS_TYPE}/TileMap.h
     ${HEADERS_TYPE}/TileTexture.h
+    ${HEADERS_TYPE}/ViewData.h
 )
 
 set( SRCS

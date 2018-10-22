@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "LoadGL.h"
+#include "type/ViewData.h"
 
 
 namespace gv {
@@ -23,6 +24,7 @@ public:
     void zoom( int steps );
     void center();
 
+    ViewData viewData() const;
     float unitInMeter() const;
     float meterInPixel() const;
     int mapZoomLevel( int tileWidth ) const;
@@ -32,11 +34,10 @@ public:
 
     glm::mat4 projection() const;
 
-    boost::signals2::signal<void()> projectionUpdated;
+    boost::signals2::signal<void( ViewData )> viewUpdated;
 
 private:
     void setProjection();
-    void testPrint() const;
 
     int pixelW_;    //!< Width of viewport (in pixels)
     int pixelH_;    //!< Height of viewport (in pixels)
