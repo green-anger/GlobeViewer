@@ -96,8 +96,6 @@ TileManager::TileManager()
     , activeRequest_( false )
     , pendingRequest_( false )
 {
-    std::cout << std::this_thread::get_id() << ": TileManager()" << std::endl;
-
     const int tNum = 4; // std::thread::hardware_concurrency() - 1;
 
     for ( int i = 0; i < tNum; ++i )

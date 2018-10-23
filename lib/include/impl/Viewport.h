@@ -28,17 +28,15 @@ public:
     ViewData viewData() const;
     float unitInMeter() const;
     float meterInPixel() const;
-    int mapZoomLevel( int tileWidth ) const;
-    /// Returns (-x, +x, -y, +y) in gl units
-    std::tuple<double, double, double, double> viewBorderUnits() const;
-    std::tuple<int, int> viewPixelSize() const;
 
     glm::mat4 projection() const;
+    std::tuple<double, double> metersAtPixel( int x, int y ) const;
 
     boost::signals2::signal<void( ViewData )> viewUpdated;
 
 private:
     void setProjection();
+    int mapZoomLevel( int tileWidth ) const;
 
     int pixelW_;    //!< Width of viewport (in pixels)
     int pixelH_;    //!< Height of viewport (in pixels)

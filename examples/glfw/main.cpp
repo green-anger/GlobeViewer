@@ -154,6 +154,10 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
     {
         globeViewer->baseState();
     }
+    else if ( GLFW_KEY_P == key && GLFW_PRESS == action )
+    {
+        globeViewer->projectCenterAt( lastX, lastY );
+    }
 
     if ( !drag )
     {

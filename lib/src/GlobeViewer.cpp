@@ -103,6 +103,7 @@ void GlobeViewer::Impl::initData()
 
     dataKeeper->getUnitInMeter.connect( std::bind( &Viewport::unitInMeter, viewport ) );
     dataKeeper->getMeterInPixel.connect( std::bind( &Viewport::meterInPixel, viewport ) );
+    dataKeeper->getMetersAtPixel.connect( std::bind( &Viewport::metersAtPixel, viewport, ph::_1, ph::_2 ) );
     dataKeeper->getProjector.connect( [this]() -> auto { return projector; } );
     dataKeeper->globeRotated.connect( std::bind( &MapGenerator::updateGlobe, mapGenerator ) );
     dataKeeper->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, ph::_1 ) );
@@ -236,6 +237,17 @@ void GlobeViewer::rotate( int x, int y )
         if ( impl_ )
         {
             impl_->dataKeeper->rotateGlobe( x, y );
+        }
+    } );
+}
+
+
+void GlobeViewer::projectCenterAt( int x, int y )
+{
+    impl_->ioc.post( [this, x, y] {
+        if ( impl_ )
+        {
+            impl_->dataKeeper->centerAt( x, y );
         }
     } );
 }

@@ -85,7 +85,7 @@ DataKeeper::~DataKeeper()
 
 void DataKeeper::init()
 {
-    boost::optional<float> optUnitInMeter = getUnitInMeter();
+    auto optUnitInMeter = getUnitInMeter();
 
     if ( !optUnitInMeter )
     {
@@ -101,6 +101,11 @@ void DataKeeper::init()
         throw std::logic_error( "Cannot initialize DataKeeper: getMeterInPixel is not defined!" );
     }
 
+    if ( !getMetersAtPixel( 0, 0 ) )
+    {
+        throw std::logic_error( "Cannot initialize DataKeeper: getMetersAtPixel is not defined!" );
+    }
+
     if ( !getProjector() )
     {
         throw std::logic_error( "Cannot initialize DataKeeper: getProjector is not defined!" );
@@ -111,76 +116,6 @@ void DataKeeper::init()
     }
 
     composeWireGlobe();
-
-    //////// TEST ///////////////////////////
-    /*
-    const GLfloat side = 600.0f;
-    const std::vector<GLfloat> verts =
-    {
-        -side, -side, 0.0f, 0.0f,
-        +side, -side, 1.0f, 0.0f,
-        +side, +side, 1.0f, 1.0f,
-        -side, -side, 0.0f, 0.0f,
-        +side, +side, 1.0f, 1.0f,
-        -side, +side, 0.0f, 1.0f
-    };
-    numMap_ = 6;
-
-    glBindBuffer( GL_ARRAY_BUFFER, vboMap_ );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( GLfloat ) * verts.size(), &verts[0], GL_STATIC_DRAW );
-    glBindBuffer( GL_ARRAY_BUFFER, 0 );
-
-    int w;
-    int h;
-    int chans;
-    stbi_set_flip_vertically_on_load( true );
-
-    glBindTexture( GL_TEXTURE_2D, texMap_ );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0 );
-    stbi_uc* buffer[4] = {
-        stbi_load( "cache/1/0/0.png", &w, &h, &chans, 0 ),
-        stbi_load( "cache/1/0/1.png", &w, &h, &chans, 0 ),
-        stbi_load( "cache/1/1/0.png", &w, &h, &chans, 0 ),
-        stbi_load( "cache/1/1/1.png", &w, &h, &chans, 0 )
-    };
-
-    TSP() << "Buffer sizes:\n"
-        << "buffer[0] = " << strlen( (const char*) buffer[0] ) << "\n"
-        << "buffer[1] = " << strlen( (const char*) buffer[1] ) << "\n"
-        << "buffer[2] = " << strlen( (const char*) buffer[2] ) << "\n"
-        << "buffer[3] = " << strlen( (const char*) buffer[3] ) << "\n";
-
-    //glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[1] );
-    //glTexSubImage2D( GL_TEXTURE_2D, 0, 256, 0, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[3] );
-    //glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 256, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[0] );
-    //glTexSubImage2D( GL_TEXTURE_2D, 0, 256, 256, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, buffer[2] );
-
-    std::vector<unsigned char> vec;
-    const std::size_t len = strlen( ( const char* ) buffer[0] );
-    const int cols = 2;
-    const int chan = 3;
-    const std::size_t texW = defs::tileSide * chan * cols;
-    vec.resize( 4 * len, 0 );
-    for ( int i = 0; i < defs::tileSide; ++i )
-        memcpy( &vec[( 0 * defs::tileSide + i ) * texW + 0 * defs::tileSide * chan], &buffer[1][i * defs::tileSide * chan], defs::tileSide * chan );
-    for ( int i = 0; i < defs::tileSide; ++i )
-        memcpy( &vec[( 0 * defs::tileSide + i ) * texW + 1 * defs::tileSide * chan], &buffer[3][i * defs::tileSide * chan], defs::tileSide * chan );
-    for ( int i = 0; i < defs::tileSide; ++i )
-        memcpy( &vec[( 1 * defs::tileSide + i ) * texW + 0 * defs::tileSide * chan], &buffer[0][i * defs::tileSide * chan], defs::tileSide * chan );
-    for ( int i = 0; i < defs::tileSide; ++i )
-        memcpy( &vec[( 1 * defs::tileSide + i ) * texW + 1 * defs::tileSide * chan], &buffer[2][i * defs::tileSide * chan], defs::tileSide * chan );
-
-    //memcpy( &vec[0 * len], buffer[1], len );
-    //memcpy( &vec[1 * len], buffer[3], len );
-    //memcpy( &vec[2 * len], buffer[0], len );
-    //memcpy( &vec[3 * len], buffer[2], len );
-
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, vec.data() );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    mapReady( true );
-    //*/
-    //////// END OF TEST ////////////////////
 }
 
 
@@ -256,6 +191,26 @@ void DataKeeper::balanceGlobe()
     projector_->setProjectionAt( 0.0, 0.0 );
     composeWireGlobe();
     globeRotated();
+}
+
+
+void DataKeeper::centerAt( int x, int y )
+{
+    double metX;
+    double metY;
+    std::tie( metX, metY ) = *getMetersAtPixel( x, y );
+    double lon;
+    double lat;
+
+    if ( projector_->projectInv( metX, metY, lon, lat ) )
+    {
+        TSP() << "DataKeeper::centerAt [" << lon << ":" << lat << "]";
+        projector_->setProjectionAt( lon, lat );
+        composeWireGlobe();
+        globeRotated();
+    }
+    else
+        TSP() << "DataKeeper::centerAt is out of range!";
 }
 
 

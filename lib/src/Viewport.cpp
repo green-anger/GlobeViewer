@@ -10,7 +10,7 @@ namespace gv
 
 
 const float Viewport::unitInMeter_ = 0.001f;
-const float Viewport::minLen_ = 500.0f;
+const float Viewport::minLen_ = 300.0f;
 const float Viewport::maxLen_ = defs::earthRadius * 2 * 3.5f;
 const float Viewport::minUnitInPixel_ = minLen_ / 1920 /*pixels*/ * unitInMeter_;
 const float Viewport::maxUnitInPixel_ = maxLen_ / 1080 /*pixels*/ * unitInMeter_;
@@ -158,34 +158,17 @@ float Viewport::meterInPixel() const
 }
 
 
-int Viewport::mapZoomLevel( int tileWidth ) const
-{
-    // 2 * earthRadius - length of projected "front side" of the Earth
-    // 2 * earthRadius - length of projected "back side" of the Earth
-    // 2^n - number of tiles in one row (or column, the same) for zoom level n
-    double tileNum = defs::earthRadius * 4 / meterInPixel_ / tileWidth;
-
-    return static_cast<int>( std::round( std::log2( tileNum ) ) );
-}
-
-
-std::tuple<double, double, double, double> Viewport::viewBorderUnits() const
-{
-    return std::make_tuple(
-        unitX_ + panX_, unitX_ + panX_ + unitW_,
-        unitY_ + panY_, unitY_ + panY_ + unitH_ );
-}
-
-
-std::tuple<int, int> Viewport::viewPixelSize() const
-{
-    return std::make_tuple( pixelW_, pixelH_ );
-}
-
-
 glm::mat4 Viewport::projection() const
 {
     return proj_;
+}
+
+
+std::tuple<double, double> Viewport::metersAtPixel( int x, int y ) const
+{
+    double metX = ( unitX_ + panX_ + x * unitInPixel_ ) / unitInMeter_;
+    double metY = ( unitY_ + panY_ + ( pixelH_ - y ) * unitInPixel_ ) / unitInMeter_;
+    return std::make_tuple( metX, metY );
 }
 
 
@@ -202,6 +185,17 @@ void Viewport::setProjection()
         zNear_, zFar_ ) *
         view;
     viewUpdated( viewData() );
+}
+
+
+int Viewport::mapZoomLevel( int tileWidth ) const
+{
+    // 2 * earthRadius - length of projected "front side" of the Earth
+    // 2 * earthRadius - length of projected "back side" of the Earth
+    // 2^n - number of tiles in one row (or column, the same) for zoom level n
+    double tileNum = defs::earthRadius * 4 / meterInPixel_ / tileWidth;
+
+    return static_cast<int>( std::round( std::log2( tileNum ) ) );
 }
 
 

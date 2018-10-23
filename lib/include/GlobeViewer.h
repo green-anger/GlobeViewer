@@ -22,6 +22,7 @@ public:
     void centerView();
     void baseState();
     void rotate( int x, int y );
+    void projectCenterAt( int x, int y );
 
     /*! \brief  Call this at the end of the main function
      *          if an instance of GlobeViewer is a global variable.

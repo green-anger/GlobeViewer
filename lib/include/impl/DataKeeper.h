@@ -26,6 +26,7 @@ public:
     void init();
     void rotateGlobe( int pixelX, int pixelY );
     void balanceGlobe();
+    void centerAt( int pixelX, int pixelY );
 
     void updateTexture( std::vector<GLfloat> /*vbo*/, int /*texW*/, int /*texH*/, std::vector<unsigned char> /*data*/ );
 
@@ -35,6 +36,7 @@ public:
 
     boost::signals2::signal<float()> getUnitInMeter;
     boost::signals2::signal<float()> getMeterInPixel;
+    boost::signals2::signal<std::tuple<double, double>( int, int )> getMetersAtPixel;
     boost::signals2::signal<std::shared_ptr<Projector>()> getProjector;
     boost::signals2::signal<void()> globeRotated;
     boost::signals2::signal<void( bool )> mapReady;
