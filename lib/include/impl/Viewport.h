@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <tuple>
 
 #include <boost/signals2.hpp>
@@ -48,14 +49,15 @@ private:
     float panX_;    //!< Pannig by coordinate x (in gl units)
     float panY_;    //!< Pannig by coordinate y (in gl units)
 
-    const float unitInMeter_;   //!< gl units in one meter
-    float meterInPixel_;        //!< meters in one pixel
-    float unitInPixel_;         //!< gl units in one pixel
+    static const float unitInMeter_;    //!< gl units in one meter
+    float meterInPixel_;                //!< meters in one pixel
+    float unitInPixel_;                 //!< gl units in one pixel
 
-    const float maxLen_;            //!< maximum Globe diameter plus 20% of it used as free space
-    const float minUnitInPixel_;    //!< minimum value of unitInPixel_
-    const float maxUnitInPixel_;    //!< maximum value of unitInPixel_
-    const float zoomStep_;          //!< change of unitInPixel_ in one step
+    static const float minLen_;                     //!< minimum length to display in 1920 pixels
+    static const float maxLen_;                     //!< maximum Globe diameter plus 20% of it used as free space
+    static const float minUnitInPixel_;             //!< minimum value of unitInPixel_
+    static const float maxUnitInPixel_;             //!< maximum value of unitInPixel_
+    static const std::map<float, float> zoomMap_;   //!< change of unitInPixel_ in one step depending on current zoom
 
     const GLfloat zNear_;
     const GLfloat zFar_;

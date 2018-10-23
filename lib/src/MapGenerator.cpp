@@ -182,13 +182,6 @@ void MapGenerator::regenerateMap()
 
     auto tiles = findTilesToProcess( mapZoomLevel, x, y );
 
-    //TSP() << "Visible tiles [" << tiles.size() << "]:";
-
-    //for ( const auto& head : tiles )
-    //{
-    //    TSP() << head.z << ", " << head.x << ", " << head.y;
-    //}
-
     composeTileTexture( tiles );
 }
 
