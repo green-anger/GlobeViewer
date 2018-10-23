@@ -65,6 +65,7 @@ void MapGenerator::init( ViewData vd )
 
 void MapGenerator::updateGlobe()
 {
+    mapReady( false );
     checkStates();
 }
 
@@ -137,8 +138,6 @@ void MapGenerator::checkStates()
     else
     {
         active_ = true;
-        viewData_ = newViewData_;
-        mapReady( false );
         ioc_.post( [this] { regenerateMap(); } );
     }
 }
@@ -166,6 +165,8 @@ void MapGenerator::cleanupCheck()
 void MapGenerator::regenerateMap()
 {
     Profiler prof( "MapGenerator::regenerateMap" );
+
+    viewData_ = newViewData_;
 
     double lon;
     double lat;
@@ -223,11 +224,6 @@ bool MapGenerator::visiblePoint( double& lon, double& lat )
     double y1 = viewData_.glY1;
     float unitInMeter = viewData_.unitInMeter;
     static const float unitLimit = static_cast<float>( defs::earthRadius * unitInMeter );
-
-    //TSP() << "Borders in units:\n"
-    //    << "x: " << x0 << ":" << x1 << "\n"
-    //    << "y: " << y0 << ":" << y1 << "\n"
-    //    << "unitLimit = " << unitLimit;
 
     if ( unitLimit <= x0 || x1 <= -unitLimit || unitLimit <= y0 || y1 <= -unitLimit )
     {
@@ -530,10 +526,6 @@ void MapGenerator::finalize()
 {
     if ( gotTiles_.load() && calcedVbo_.load() )
     {
-        //int w = std::get<0>( tileTex_.textureSize ) * defs::tileSide;
-        //int h = std::get<1>( tileTex_.textureSize ) * defs::tileSide;
-        //updateMapTexture( vbo_, w, h, data_ );
-        
         calcedVbo_.store( false );
         gotTiles_.store( false );
 

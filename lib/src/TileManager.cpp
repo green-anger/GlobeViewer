@@ -145,7 +145,6 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
 
     ioc_.post( [this]()
     {
-        //TSP() << "Waiting for all " << remains_ << " jobs done";
         promiseReady_->get_future().wait();
         //TSP() << "All jobs are done!";
         sendTiles( vecResult_ );
@@ -335,10 +334,10 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
 
     auto head = response_.base();
 
-    TSP() << "Got response in " << msec << " msecs\n"
-        << "result = " << head.result() << "\n"
-        << "version = " << head.version() << "\n"
-        << "reason = " << head.reason() << "\n";
+    //TSP() << "Got response in " << msec << " msecs\n"
+    //    << "result = " << head.result() << "\n"
+    //    << "version = " << head.version() << "\n"
+    //    << "reason = " << head.reason() << "\n";
 
     const auto& body = response_.body();
     std::ofstream tile( tileFile( tileHead_ ), std::ios::out | std::ios::binary );
@@ -352,8 +351,6 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
     }
 
     checkRemains();
-
-    //TSP() << "Tile " << tileTarget( tileHead_ ) << " was written!";
 }
 
 
@@ -361,7 +358,6 @@ void TileManager::Session::checkRemains()
 {
     if ( --remains_ == 0 )
     {
-        //TSP() << "Setting promise";
         promise_.set_value();
     }
 }
