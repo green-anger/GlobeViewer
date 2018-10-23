@@ -111,11 +111,11 @@ void mouseCallback( GLFWwindow* window, double xpos, double ypos )
     {
         if ( shift )
         {
-            globeViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+            globeViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
         }
         else
         {
-            globeViewer->rotate( static_cast< int >( xoff ), static_cast< int >( yoff ) );
+            globeViewer->move( static_cast< int >( xoff ), static_cast< int >( yoff ) );
         }
     }
 }
