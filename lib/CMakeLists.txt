@@ -8,7 +8,7 @@ add_definitions( -DBOOST_ALL_NO_LIB )
 find_package( Boost 1.67.0 REQUIRED COMPONENTS filesystem system )
 find_package( OpenGL REQUIRED )
 find_package( glm REQUIRED )
-find_package( PROJ4 5.0.0 REQUIRED )
+find_package( PROJ4 5.0.1 REQUIRED )
 
 set( HEADERS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 set( HEADERS_IMPL "${HEADERS_ROOT}/impl" )

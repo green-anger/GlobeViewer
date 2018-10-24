@@ -204,13 +204,10 @@ void DataKeeper::centerAt( int x, int y )
 
     if ( projector_->projectInv( metX, metY, lon, lat ) )
     {
-        TSP() << "DataKeeper::centerAt [" << lon << ":" << lat << "]";
         projector_->setProjectionAt( lon, lat );
         composeWireGlobe();
         globeRotated();
     }
-    else
-        TSP() << "DataKeeper::centerAt is out of range!";
 }
 
 
