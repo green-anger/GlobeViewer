@@ -21,6 +21,9 @@
 namespace gv {
 
 
+class TileServerBase;
+
+
 class TileManager
 {
 public:
@@ -32,18 +35,16 @@ public:
 
 private:
     class Session;
+    friend class Session;
 
-    bool fromCache( Tile& );
     void prepareDir( const TileHead& );
 
     boost::asio::io_context ioc_;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
     std::vector<std::thread> threads_;
 
+    std::shared_ptr<TileServerBase> tileServer_;
     std::unordered_map<std::pair<int, int>, std::string> dirs_;
-    const std::array<std::string, 3> hosts_;
-    const std::string port_;
-    std::atomic<int> curHost_;
 
     std::vector<TileImage> vecResult_;
     std::mutex mutexResult_;
@@ -54,6 +55,10 @@ private:
     bool activeRequest_;
     bool pendingRequest_;
     std::vector<TileHead> lastRequest_;
+
+    std::mutex mutexCount_;
+    std::unordered_map<std::string, int> mirrorCount_;
+    std::atomic<int> cacheCount_;
 };
 
 
