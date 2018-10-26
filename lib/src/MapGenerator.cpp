@@ -103,6 +103,13 @@ void MapGenerator::getTiles( const std::vector<TileImage>& vec )
 
     for ( const auto& ti : vec )
     {
+        const auto& data = ti.data.data;
+
+        if ( data.empty() )
+        {
+            continue;
+        }
+
         auto it = tiles.find( ti.head );
 
         if ( it != tiles.end() )
@@ -110,7 +117,7 @@ void MapGenerator::getTiles( const std::vector<TileImage>& vec )
             const auto& row = it->second.row;
             const auto& col = it->second.col;
 
-            auto buffer = stbi_load_from_memory( &ti.data.data[0], ti.data.data.size(), &w, &h, &chans, 0 );
+            auto buffer = stbi_load_from_memory( &data[0], data.size(), &w, &h, &chans, 0 );
             
             for ( int i = 0; i < defs::tileSide; ++i )
             {
