@@ -3,6 +3,8 @@
 #include <functional>
 #include <memory>
 
+#include "type/TileServer.h"
+
 
 namespace gv {
 
@@ -23,6 +25,7 @@ public:
     void baseState();
     void rotate( int x, int y );
     void projectCenterAt( int x, int y );
+    void setTileSource( TileServer );
 
     /*! \brief  Call this at the end of the main function
      *          if an instance of GlobeViewer is a global variable.

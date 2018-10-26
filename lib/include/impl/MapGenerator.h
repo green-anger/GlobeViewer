@@ -9,6 +9,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/signals2.hpp>
 
+#include "type/TileServer.h"
 #include "type/TileTexture.h"
 #include "type/ViewData.h"
 
@@ -28,10 +29,11 @@ public:
     void init( ViewData );
     void updateGlobe();
     void updateViewData( ViewData );
+    void updateTileServer( TileServer );
     void getTiles( const std::vector<TileImage>& );
 
     boost::signals2::signal<std::shared_ptr<Projector>()> getProjector;
-    boost::signals2::signal<void( std::vector<TileHead> )> requestTiles;
+    boost::signals2::signal<void( std::vector<TileHead>, TileServer )> requestTiles;
     boost::signals2::signal<void( bool )> mapReady;
     boost::signals2::signal<void( std::vector<GLfloat> /*vbo*/, int /*texW*/, int /*texH*/,
         std::vector<unsigned char> /*data*/)> updateMapTexture;
@@ -58,6 +60,8 @@ private:
     std::shared_ptr<Projector> projector_;
     ViewData viewData_;
     ViewData newViewData_;
+    TileServer tileServerType_;
+    TileServer newTileServerType_;
     TileTexture tileTex_;
 
     std::vector<GLfloat> vbo_;

@@ -116,7 +116,7 @@ void GlobeViewer::Impl::initData()
     renderer->renderMapTiles.connect( std::bind( &DataKeeper::mapTiles, dataKeeper ) );
 
     mapGenerator->getProjector.connect( [this]() -> auto { return projector; } );
-    mapGenerator->requestTiles.connect( std::bind( &TileManager::requestTiles, tileManager, ph::_1 ) );
+    mapGenerator->requestTiles.connect( std::bind( &TileManager::requestTiles, tileManager, ph::_1, ph::_2 ) );
     mapGenerator->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, ph::_1 ) );
     mapGenerator->updateMapTexture.connect( [this]( std::vector<GLfloat> vbo, int w, int h, std::vector<unsigned char> data )
     {
@@ -248,6 +248,17 @@ void GlobeViewer::projectCenterAt( int x, int y )
         if ( impl_ )
         {
             impl_->dataKeeper->centerAt( x, y );
+        }
+    } );
+}
+
+
+void GlobeViewer::setTileSource( TileServer ts )
+{
+    impl_->ioc.post( [this, ts] {
+        if ( impl_ )
+        {
+            impl_->mapGenerator->updateTileServer( ts );
         }
     } );
 }

@@ -60,6 +60,8 @@ void MapGenerator::init( ViewData vd )
 
     newViewData_ = vd;
     viewData_ = vd;
+    newTileServerType_ = TileServer::OSM;
+    tileServerType_ = TileServer::OSM;
 }
 
 
@@ -73,6 +75,13 @@ void MapGenerator::updateGlobe()
 void MapGenerator::updateViewData( ViewData vd )
 {
     newViewData_ = vd;
+    checkStates();
+}
+
+
+void MapGenerator::updateTileServer( TileServer ts )
+{
+    newTileServerType_ = ts;
     checkStates();
 }
 
@@ -174,6 +183,7 @@ void MapGenerator::regenerateMap()
     Profiler prof( "MapGenerator::regenerateMap" );
 
     viewData_ = newViewData_;
+    tileServerType_ = newTileServerType_;
 
     double lon;
     double lat;
@@ -439,7 +449,7 @@ void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
         }
     }
 
-    requestTiles( tileHeads );
+    requestTiles( tileHeads, tileServerType_ );
     vboFromTileTexture( tileTex_ );
 }
 

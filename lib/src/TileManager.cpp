@@ -12,8 +12,6 @@
 #include <boost/filesystem.hpp>
 
 #include "TileManager.h"
-#include "TileServer2GIS.h"
-#include "TileServerOSM.h"
 #include "ThreadSafePrinter.hpp"
 
 
@@ -85,7 +83,8 @@ namespace gv {
 TileManager::TileManager()
     : ioc_()
     , work_( make_work_guard( ioc_ ) )
-    , tileServer_( new TileServer2GIS )
+    , serverType_( TileServer::OSM )
+    , tileServer_( TileServerFactory::createTileServer( serverType_ ) )
     , activeRequest_( false )
     , pendingRequest_( false )
 {
@@ -113,12 +112,14 @@ TileManager::~TileManager()
 }
 
 
-void TileManager::requestTiles( const std::vector<TileHead>& vec )
+void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts )
 {
     TSP() << "Request for " << vec.size() << " tiles";
 
     if ( vec.empty() )
     {
+        vecResult_.clear();
+        sendTiles( vecResult_ );
         return;
     }
 
@@ -129,6 +130,7 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
         {
             pendingRequest_ = true;
             lastRequest_ = std::move( vec );
+            lastTileServer_ = ts;
             return;
         }
         else
@@ -137,6 +139,12 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
         }
     }
     
+    if ( ts != serverType_ )
+    {
+        serverType_ = ts;
+        tileServer_ = TileServerFactory::createTileServer( serverType_ );
+    }
+
     vecResult_.clear();
     remains_ = vec.size();
     promiseReady_.reset( new std::promise<void> );
@@ -163,7 +171,7 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
         {
             pendingRequest_ = false;
             // otherwise mutexState_ will be locked twice which is UB
-            ioc_.post( [this] { requestTiles( lastRequest_ ); } );
+            ioc_.post( [this] { requestTiles( lastRequest_, lastTileServer_ ); } );
             ///\todo this request can arrive later than a new one from outside
             /// which will make it outdated, some check needs to be added to prevent
             /// processing of uotdated requests

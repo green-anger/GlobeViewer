@@ -16,12 +16,10 @@
 #include <boost/signals2.hpp>
 
 #include "type/TileMap.h"
+#include "TileServerFactory.h"
 
 
 namespace gv {
-
-
-class TileServerBase;
 
 
 class TileManager
@@ -30,7 +28,7 @@ public:
     TileManager();
     ~TileManager();
 
-    void requestTiles( const std::vector<TileHead>& );
+    void requestTiles( const std::vector<TileHead>&, TileServer );
     boost::signals2::signal<void( const std::vector<TileImage>& )> sendTiles;
 
 private:
@@ -43,7 +41,8 @@ private:
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
     std::vector<std::thread> threads_;
 
-    std::shared_ptr<TileServerBase> tileServer_;
+    TileServer serverType_;
+    std::unique_ptr<TileServerBase> tileServer_;
     std::unordered_map<std::pair<int, int>, std::string> dirs_;
 
     std::vector<TileImage> vecResult_;
@@ -55,6 +54,7 @@ private:
     bool activeRequest_;
     bool pendingRequest_;
     std::vector<TileHead> lastRequest_;
+    TileServer lastTileServer_;
 
     std::mutex mutexCount_;
     std::unordered_map<std::string, int> mirrorCount_;

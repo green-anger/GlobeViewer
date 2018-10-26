@@ -25,6 +25,7 @@ bool shift = false;
 bool firstClick = true;
 double lastX;
 double lastY;
+gv::TileServer tileServer = gv::TileServer::OSM;
 
 
 int main( int argc, char** argv )
@@ -157,6 +158,19 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
     else if ( GLFW_KEY_P == key && GLFW_PRESS == action )
     {
         globeViewer->projectCenterAt( lastX, lastY );
+    }
+    else if ( GLFW_KEY_T == key && GLFW_PRESS == action )
+    {
+        if ( gv::TileServer::OSM == tileServer )
+        {
+            tileServer = gv::TileServer::GIS;
+        }
+        else
+        {
+            tileServer = gv::TileServer::OSM;
+        }
+
+        globeViewer->setTileSource( tileServer );
     }
 
     if ( !drag )

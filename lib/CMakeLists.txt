@@ -27,9 +27,10 @@ set( HDRS
     ${HEADERS_IMPL}/Projector.h
     ${HEADERS_IMPL}/Renderer.h
     ${HEADERS_IMPL}/TileManager.h
-    ${HEADERS_IMPL}/TileServerBase.h
-    ${HEADERS_IMPL}/TileServerOSM.h
     ${HEADERS_IMPL}/TileServer2GIS.h
+    ${HEADERS_IMPL}/TileServerBase.h
+    ${HEADERS_IMPL}/TileServerFactory.h
+    ${HEADERS_IMPL}/TileServerOSM.h
     ${HEADERS_IMPL}/Viewport.h
     ${HEADERS_SUPP}/FpsCounter.h
     ${HEADERS_SUPP}/LoadGL.h
@@ -39,6 +40,7 @@ set( HDRS
     ${HEADERS_SUPP}/ThreadSafePrinter.hpp
     ${HEADERS_TYPE}/Tile.h
     ${HEADERS_TYPE}/TileMap.h
+    ${HEADERS_TYPE}/TileServer.h
     ${HEADERS_TYPE}/TileTexture.h
     ${HEADERS_TYPE}/ViewData.h
 )
@@ -50,9 +52,10 @@ set( SRCS
     ${SOURCES_ROOT}/Projector.cpp
     ${SOURCES_ROOT}/Renderer.cpp
     ${SOURCES_ROOT}/TileManager.cpp
-    ${SOURCES_ROOT}/TileServerBase.cpp
-    ${SOURCES_ROOT}/TileServerOSM.cpp
     ${SOURCES_ROOT}/TileServer2GIS.cpp
+    ${SOURCES_ROOT}/TileServerBase.cpp
+    ${SOURCES_ROOT}/TileServerFactory.cpp
+    ${SOURCES_ROOT}/TileServerOSM.cpp
     ${SOURCES_ROOT}/Viewport.cpp
     ${SOURCES_SUPP}/glad/glad.c
     ${SOURCES_SUPP}/FpsCounter.cpp
