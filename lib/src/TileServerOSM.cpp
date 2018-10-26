@@ -1,7 +1,6 @@
 #pragma once
 
-#include "TileServerBase.h"
-#include "..\include\impl\TileServerOSM.h"
+#include "TileServerOSM.h"
 
 
 namespace gv {
@@ -45,7 +44,6 @@ std::string TileServerOSM::getNextMirror()
 std::string TileServerOSM::getTileTarget( int z, int x, int y ) const
 {
     return "/" + std::to_string( z ) + "/" + std::to_string( x ) + "/" + std::to_string( y ) + ".png";
-    return std::string();
 }
 
 

@@ -27,12 +27,6 @@ namespace {
 
 const std::string cache = "cache";
 
-//std::string tileTarget( const gv::TileHead& head )
-//{
-//    //return "/tiles?x=" + std::to_string( head.x ) + "&y=" + std::to_string( head.y ) + "&z=" + std::to_string( head.z );
-//    return "/" + std::to_string( head.z ) + "/" + std::to_string( head.x ) + "/" + std::to_string( head.y ) + ".png";
-//}
-
 std::string tileDir( const gv::TileHead& head, const std::string& name )
 {
     return cache + "/" + name + "/" + std::to_string( head.z ) + "/" + std::to_string( head.x ) + "/";
@@ -42,6 +36,7 @@ std::string tileFile( const gv::TileHead& head, const std::string& name )
 {
     return tileDir( head, name ) + std::to_string( head.y ) + ".png";
 }
+
 
 }
 
@@ -90,7 +85,7 @@ namespace gv {
 TileManager::TileManager()
     : ioc_()
     , work_( make_work_guard( ioc_ ) )
-    , tileServer_( new TileServerOSM )
+    , tileServer_( new TileServer2GIS )
     , activeRequest_( false )
     , pendingRequest_( false )
 {
@@ -122,7 +117,7 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec )
 {
     TSP() << "Request for " << vec.size() << " tiles";
 
-    if ( vec.empty() || vec[0].z < 2 )
+    if ( vec.empty() )
     {
         return;
     }
@@ -235,10 +230,6 @@ TileManager::Session::~Session()
 
 void TileManager::Session::start()
 {
-    //TSP() << "Sleeping, remains = " << remains_;
-    //std::this_thread::sleep_until( std::chrono::steady_clock::now() + std::chrono::seconds( 2 ) );
-    //TSP() << "Woke up, checking/getting tile";
-
     const auto tilePath = tileFile( tileHead_, tm_->tileServer_->serverName() );
 
     if ( exists( path( tilePath ) ) )
@@ -254,13 +245,9 @@ void TileManager::Session::start()
 
         ++tm_->cacheCount_;
         checkRemains();
-
-        //TSP() << "Updated tile from cache";
     }
     else
     {
-        //get( "tile0.maps.2gis.com", "80" );
-        //get( "a.tile.openstreetmap.org", "80" );
         mirror_ = tm_->tileServer_->nextMirror();
         get( mirror_, tm_->tileServer_->serverPort() );
     }
