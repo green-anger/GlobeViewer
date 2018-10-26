@@ -117,8 +117,8 @@ void MapGenerator::getTiles( const std::vector<TileImage>& vec )
             const auto& row = it->second.row;
             const auto& col = it->second.col;
 
-            auto buffer = stbi_load_from_memory( &data[0], data.size(), &w, &h, &chans, 0 );
-            
+            auto buffer = stbi_load_from_memory( &data[0], data.size(), &w, &h, &chans, STBI_rgb );
+
             for ( int i = 0; i < defs::tileSide; ++i )
             {
                 memcpy( &data_[( row * defs::tileSide + i ) * texW + col * tileW], &buffer[i * tileW], tileW );
