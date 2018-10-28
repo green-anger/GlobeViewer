@@ -26,6 +26,7 @@ bool firstClick = true;
 double lastX;
 double lastY;
 gv::TileServer tileServer = gv::TileServer::OSM;
+bool drawWireFrameView = true;
 
 
 int main( int argc, char** argv )
@@ -171,6 +172,12 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
         }
 
         globeViewer->setTileSource( tileServer );
+    }
+    else if ( GLFW_KEY_1 == key && GLFW_PRESS == action )
+    {
+        drawWireFrameView = !drawWireFrameView;
+
+        globeViewer->setWireFrameView( drawWireFrameView );
     }
 
     if ( !drag )

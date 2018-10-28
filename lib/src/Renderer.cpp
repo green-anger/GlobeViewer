@@ -14,6 +14,7 @@ namespace gv {
 
 Renderer::Renderer()
     : mapReady_( false )
+    , drawWires_( true )
 {
     shaderSimple_.reset( new support::Shader( "shaders/simple.vs", "shaders/simple.fs" ) );
     shaderTexture_.reset( new support::Shader( "shaders/texture.vs", "shaders/texture.fs" ) );
@@ -100,6 +101,7 @@ void Renderer::render()
     }
     //*/
 
+    if ( drawWires_ )
     {   // Wire Globe
         glUniform4fv( ssColor_, 1, glm::value_ptr( glm::vec4( 1.0f, 1.0f, 0.0f, 1.0f ) ) );
 
@@ -126,6 +128,12 @@ void Renderer::render()
 void Renderer::setMapReady( bool val )
 {
     mapReady_ = val;
+}
+
+
+void Renderer::setDrawWires( bool val )
+{
+    drawWires_ = val;
 }
 
 

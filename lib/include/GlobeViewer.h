@@ -26,6 +26,7 @@ public:
     void rotate( int x, int y );
     void projectCenterAt( int x, int y );
     void setTileSource( TileServer );
+    void setWireFrameView( bool );
 
     /*! \brief  Call this at the end of the main function
      *          if an instance of GlobeViewer is a global variable.

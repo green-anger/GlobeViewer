@@ -264,6 +264,17 @@ void GlobeViewer::setTileSource( TileServer ts )
 }
 
 
+void GlobeViewer::setWireFrameView( bool val )
+{
+    impl_->ioc.post( [this, val] {
+        if ( impl_ )
+        {
+            impl_->renderer->setDrawWires( val );
+        }
+    } );
+}
+
+
 void GlobeViewer::cleanup()
 {
     impl_.reset();
