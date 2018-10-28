@@ -43,7 +43,6 @@ private:
 
     TileServer serverType_;
     std::unique_ptr<TileServerBase> tileServer_;
-    std::unordered_map<std::pair<int, int>, std::string> dirs_;
 
     std::vector<TileImage> vecResult_;
     std::mutex mutexResult_;

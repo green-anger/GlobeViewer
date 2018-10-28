@@ -191,7 +191,6 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts 
 
     for ( const auto& head : vec )
     {
-        prepareDir( head );
         ioc_.post( [head, this]()
         {
             std::make_shared<Session>( this, head, 1000 )->start();
@@ -202,15 +201,7 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts 
 
 void TileManager::prepareDir( const TileHead& head )
 {
-    auto key = std::make_pair( head.z, head.x );
-    auto it = dirs_.find( key );
-
-    if ( it == dirs_.end() )
-    {
-        auto dir = tileDir( head, tileServer_->serverName() );
-        create_directories( dir );
-        dirs_.emplace( key, dir );
-    }
+    create_directories( tileDir( head, tileServer_->serverName() ) );
 }
 
 
@@ -384,6 +375,7 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
     //    << "version = " << head.version() << "\n"
     //    << "reason = " << head.reason() << "\n";
 
+    tm_->prepareDir( tileHead_ );
     const auto& body = response_.body();
     std::ofstream tile( tileFile( tileHead_, tm_->tileServer_->serverName() ), std::ios::out | std::ios::binary );
     tile.write( body.c_str(), body.size() );
