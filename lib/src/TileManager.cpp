@@ -71,6 +71,7 @@ private:
     http::response<http::string_body> response_;
 
     std::chrono::time_point<std::chrono::steady_clock> start_;
+    int tries_;
 };
 
 
@@ -217,6 +218,7 @@ TileManager::Session::Session( TileManager* tm, const TileHead& head )
     , tileHead_( head )
     , resolver_( tm_->ioc_ )
     , socket_( tm_->ioc_ )
+    , tries_( 3 )
 {
 }
 
@@ -233,6 +235,8 @@ TileManager::Session::~Session()
             TSP() << "Session shutdown error";
         }
     }
+
+    checkRemains();
 }
 
 
@@ -252,7 +256,7 @@ void TileManager::Session::start()
         }
 
         ++tm_->cacheCount_;
-        checkRemains();
+        //checkRemains();
     }
     else
     {
@@ -281,6 +285,11 @@ void TileManager::Session::get( const std::string& host, const std::string& port
 void TileManager::Session::error( boost::system::error_code ec, const std::string& msg )
 {
     TSP() << msg << ": " << ec.message() << "\n";
+
+    if ( --tries_ > 0 )
+    {
+        start();
+    }
 }
 
 
@@ -366,7 +375,7 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
         }
     }
 
-    checkRemains();
+    //checkRemains();
 }
 
 
