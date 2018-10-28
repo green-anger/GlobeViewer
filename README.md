@@ -3,7 +3,7 @@
 [GlobeViewer](https://github.com/green-anger/GlobeViewer) allows you to view popular online maps not in Mercator but Orthographic projection.
 [Greenland will never be larger than Australia](https://www.quora.com/Which-is-bigger-Australia-or-Greenland) again.
 In addition to viewing tiles GlobeViewer caches them. So viewed once the tiles will be available to you afterwards even offline!
-Currently it supports [OpenStreetMap](https://www.openstreetmap.org) tiles only.
+Currently it supports [OpenStreetMap](https://www.openstreetmap.org) and [2GIS](https://2gis.com) tiles.
 
 Keep in mind that the tiles are not changed, so switching to another projection (from Mercator to Orthographic) will distort them a bit.
 But all symbols remain readable at all zoom levels.
@@ -28,6 +28,8 @@ Note: _currently the library is poorly documented (if at all), please see provid
 * Press key 'C' to place the Globe in window center
 * Press key 'B' to rotate the Globe so that projection center is at [0, 0]
 * Press key 'P' to rotate the Globe so that projection center is at the current mouse cursor position if it's inside the Globe, ignore otherwise
+* Press key '1' to toggle display of wire-frame
+* Press key '2' to toggle display of map tiles
 * Press Escape to exit
 
 ## Screenshots
@@ -42,7 +44,13 @@ Note: _currently the library is poorly documented (if at all), please see provid
 ## Dependencies
 
 General:
-* C++11
+* C++14
+
+Embedded into the source code:
+* [Glad OpenGL loader](https://github.com/Dav1dde/glad) files generated on [this site](https://glad.dav1d.de/)
+* [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h) from [stb repo](https://github.com/nothings/stb/)
+* [ThreadSafePrinter](https://github.com/green-anger/ThreadSafePrinter/)
+* [Profiler](https://github.com/green-anger/Profiler/)
 
 Library
 * [OpenGL](https://www.khronos.org/opengl/)
