@@ -48,8 +48,8 @@ private:
     float panY_;    //!< Pannig by coordinate y (in gl units)
 
     static const float unitInMeter_;    //!< gl units in one meter
-    float meterInPixel_;                //!< meters in one pixel
     float unitInPixel_;                 //!< gl units in one pixel
+    float meterInPixel_;                //!< meters in one pixel
 
     static const float minLen_;                     //!< minimum length to display in 1920 pixels
     static const float maxLen_;                     //!< maximum Globe diameter plus 20% of it used as free space

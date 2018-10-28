@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 
+#include <boost/asio/steady_timer.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
@@ -16,6 +17,7 @@
 
 
 using tcp = boost::asio::ip::tcp;
+using steady_timer = boost::asio::steady_timer;
 namespace http = boost::beast::http;
 using namespace boost::filesystem;
 using TSP = alt::ThreadSafePrinter<alt::MarkPolicy>;
@@ -45,14 +47,16 @@ namespace gv {
 class TileManager::Session : public std::enable_shared_from_this<TileManager::Session>
 {
 public:
-    explicit Session( TileManager*, const TileHead& );
+    explicit Session( TileManager*, const TileHead&, int msecTimeout );
     ~Session();
 
     void start();
 
 private:
+    void stop();
     void error( boost::system::error_code, const std::string& );
     void get( const std::string& host, const std::string& port );
+    void onTimeout();
     void onResolve( boost::system::error_code, tcp::resolver::results_type );
     void onConnect( boost::system::error_code );
     void onWrite( boost::system::error_code, std::size_t );
@@ -64,6 +68,7 @@ private:
     TileHead tileHead_;
     std::string mirror_;
 
+    steady_timer timer_;
     tcp::resolver resolver_;
     tcp::socket socket_;
     boost::beast::flat_buffer buffer_;
@@ -72,6 +77,8 @@ private:
 
     std::chrono::time_point<std::chrono::steady_clock> start_;
     int tries_;
+    const int msecTimeout_;
+    std::atomic<bool> connected_;
 };
 
 
@@ -150,11 +157,11 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts 
     remains_ = vec.size();
     promiseReady_.reset( new std::promise<void> );
 
-    ioc_.post( [this]()
+    ioc_.post( [this, rem = vec.size()]()
     {
         promiseReady_->get_future().wait();
 
-        TSP() << "All jobs are done!\n"
+        TSP() << "All " << rem << " jobs are done!\n"
             << "From cache: " << cacheCount_ << "\n"
             << "From mirrors" << ( mirrorCount_.empty() ? " nothing" : ": " );
 
@@ -187,7 +194,7 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts 
         prepareDir( head );
         ioc_.post( [head, this]()
         {
-            std::make_shared<Session>( this, head )->start();
+            std::make_shared<Session>( this, head, 1000 )->start();
         } );
     }
 }
@@ -213,29 +220,22 @@ void TileManager::prepareDir( const TileHead& head )
 namespace gv {
 
 
-TileManager::Session::Session( TileManager* tm, const TileHead& head )
+TileManager::Session::Session( TileManager* tm, const TileHead& head, int msecTimeout )
     : tm_( tm )
     , tileHead_( head )
+    , timer_( tm_->ioc_ )
     , resolver_( tm_->ioc_ )
     , socket_( tm_->ioc_ )
     , tries_( 3 )
+    , msecTimeout_( msecTimeout )
+    , connected_( false )
 {
 }
 
 
 TileManager::Session::~Session()
 {
-    if ( socket_.is_open() )
-    {
-        boost::system::error_code ec;
-        socket_.shutdown( tcp::socket::shutdown_both, ec );
-
-        if ( ec && ec != boost::system::errc::not_connected )
-        {
-            TSP() << "Session shutdown error";
-        }
-    }
-
+    stop();
     checkRemains();
 }
 
@@ -256,7 +256,6 @@ void TileManager::Session::start()
         }
 
         ++tm_->cacheCount_;
-        //checkRemains();
     }
     else
     {
@@ -282,11 +281,43 @@ void TileManager::Session::get( const std::string& host, const std::string& port
 }
 
 
+void TileManager::Session::onTimeout()
+{
+    if ( !connected_ )
+    {
+        stop();
+    }
+}
+
+
+void TileManager::Session::stop()
+{
+    if ( socket_.is_open() )
+    {
+        boost::system::error_code ec;
+
+        socket_.shutdown( tcp::socket::shutdown_both, ec );
+
+        if ( ec && ec != boost::system::errc::not_connected )
+        {
+            TSP() << "Session shutdown error: " << ec.message();
+        }
+
+        socket_.close( ec );
+
+        if ( ec )
+        {
+            TSP() << "Session socket close error: " << ec.message();
+        }
+    }
+}
+
+
 void TileManager::Session::error( boost::system::error_code ec, const std::string& msg )
 {
     TSP() << msg << ": " << ec.message() << "\n";
 
-    if ( --tries_ > 0 )
+    if ( --tries_ > 0 && boost::system::errc::host_unreachable == ec )
     {
         start();
     }
@@ -301,6 +332,8 @@ void TileManager::Session::onResolve( boost::system::error_code ec, tcp::resolve
     }
 
     namespace ph = std::placeholders;
+    timer_.expires_at( std::chrono::steady_clock::now() + std::chrono::milliseconds( msecTimeout_ ) );
+    timer_.async_wait( std::bind( &TileManager::Session::onTimeout, shared_from_this() ) );
     boost::asio::async_connect( socket_, results.begin(), results.end(),
         std::bind( &Session::onConnect, shared_from_this(), ph::_1 ) );
 }
@@ -313,6 +346,8 @@ void TileManager::Session::onConnect( boost::system::error_code ec )
         return error( ec, "connect" );
     }
 
+    connected_ = true;
+    timer_.cancel();
     namespace ph = std::placeholders;
     http::async_write( socket_, request_,
         std::bind( &Session::onWrite, shared_from_this(), ph::_1, ph::_2 ) );
@@ -339,10 +374,10 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
         return error( ec, "read" );
     }
 
-    auto end = std::chrono::steady_clock::now();
-    auto msec = std::chrono::duration_cast< std::chrono::milliseconds >( end - start_ ).count();
+    //auto end = std::chrono::steady_clock::now();
+    //auto msec = std::chrono::duration_cast< std::chrono::milliseconds >( end - start_ ).count();
 
-    auto head = response_.base();
+    //auto head = response_.base();
 
     //TSP() << "Got response in " << msec << " msecs\n"
     //    << "result = " << head.result() << "\n"
@@ -374,8 +409,6 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
             tm_->mirrorCount_.emplace( mirror_, 1 );
         }
     }
-
-    //checkRemains();
 }
 
 

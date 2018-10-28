@@ -89,12 +89,14 @@ void MapGenerator::updateTileServer( TileServer ts )
 void MapGenerator::getTiles( const std::vector<TileImage>& vec )
 {
     data_.clear();
-    
+
     if ( vec.empty() )
     {
+        gotTiles_.store( true );
+        finalize();
         return;
     }
-    
+
     int rowNum;
     int colNum;
     std::tie( colNum, rowNum ) = tileTex_.textureSize;
