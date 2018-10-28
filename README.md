@@ -28,6 +28,7 @@ Note: _currently the library is poorly documented (if at all), please see provid
 * Press key 'C' to place the Globe in window center
 * Press key 'B' to rotate the Globe so that projection center is at [0, 0]
 * Press key 'P' to rotate the Globe so that projection center is at the current mouse cursor position if it's inside the Globe, ignore otherwise
+* Press key 'T' to toggle between two tile servers
 * Press key '1' to toggle display of wire-frame
 * Press key '2' to toggle display of map tiles
 * Press Escape to exit
