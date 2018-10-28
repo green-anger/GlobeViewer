@@ -27,6 +27,7 @@ double lastX;
 double lastY;
 gv::TileServer tileServer = gv::TileServer::OSM;
 bool drawWireFrameView = true;
+bool drawMapTilesView = true;
 
 
 int main( int argc, char** argv )
@@ -178,6 +179,12 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
         drawWireFrameView = !drawWireFrameView;
 
         globeViewer->setWireFrameView( drawWireFrameView );
+    }
+    else if ( GLFW_KEY_2 == key && GLFW_PRESS == action )
+    {
+        drawMapTilesView = !drawMapTilesView;
+
+        globeViewer->setMapTilesView( drawMapTilesView );
     }
 
     if ( !drag )

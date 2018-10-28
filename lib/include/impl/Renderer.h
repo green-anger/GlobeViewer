@@ -27,6 +27,7 @@ public:
     void render();
     void setMapReady( bool );
     void setDrawWires( bool );
+    void setDrawMap( bool );
 
     boost::signals2::signal<glm::mat4()> getProjection;
     boost::signals2::signal<std::tuple<GLuint, GLsizei>()> renderSimpleTriangle;
@@ -42,6 +43,7 @@ private:
     GLint stSample_;
     bool mapReady_;
     bool drawWires_;
+    bool drawMap_;
 };
 
 

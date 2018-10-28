@@ -275,6 +275,17 @@ void GlobeViewer::setWireFrameView( bool val )
 }
 
 
+void GlobeViewer::setMapTilesView( bool val )
+{
+    impl_->ioc.post( [this, val] {
+        if ( impl_ )
+        {
+            impl_->renderer->setDrawMap( val );
+        }
+    } );
+}
+
+
 void GlobeViewer::cleanup()
 {
     impl_.reset();

@@ -15,6 +15,7 @@ namespace gv {
 Renderer::Renderer()
     : mapReady_( false )
     , drawWires_( true )
+    , drawMap_( true )
 {
     shaderSimple_.reset( new support::Shader( "shaders/simple.vs", "shaders/simple.fs" ) );
     shaderTexture_.reset( new support::Shader( "shaders/texture.vs", "shaders/texture.fs" ) );
@@ -53,7 +54,7 @@ void Renderer::render()
     shaderTexture_->use();
     glUniformMatrix4fv( stProj_, 1, GL_FALSE, glm::value_ptr( proj ) );
 
-    if ( mapReady_ )
+    if ( drawMap_ && mapReady_ )
     {   // Map tiles
         boost::optional<std::tuple<GLuint, GLuint, GLsizei>> optMapTiles = renderMapTiles();
 
@@ -134,6 +135,12 @@ void Renderer::setMapReady( bool val )
 void Renderer::setDrawWires( bool val )
 {
     drawWires_ = val;
+}
+
+
+void Renderer::setDrawMap( bool val )
+{
+    drawMap_ = val;
 }
 
 
