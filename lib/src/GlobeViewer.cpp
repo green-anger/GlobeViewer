@@ -22,7 +22,8 @@
 
 using namespace boost::asio;
 
-
+/*! \brief Contains all classes and functions related to GlobeViewer
+ */
 namespace gv
 {
 
@@ -36,6 +37,7 @@ public:
     bool initGl() const;
     void initData();
 
+    ///\todo make it atomic
     bool valid;
 
     std::function<void()> makeCurrent;
@@ -135,6 +137,10 @@ void GlobeViewer::Impl::initData()
 }
 
 
+/*!
+ * Constructor must receive means to make current some OpenGL context.
+ * \param[in] func A callable capable of making current some OpenGL context.
+ */
 GlobeViewer::GlobeViewer( std::function<void()> func )
     : impl_( new GlobeViewer::Impl( func ) )
 {
@@ -158,12 +164,20 @@ GlobeViewer::~GlobeViewer()
 }
 
 
+/*!
+ * Calling any other API method before getting true from this one may result in undefined behavior.
+ * \return true if setup is valid, false otherwise
+ */
 bool GlobeViewer::validSetup() const
 {
     return impl_ ? impl_->valid : false;
 }
 
 
+/*!
+ * It must be called every time the view must be renewed.
+ * It's often done by timer to get constant frame rate.
+ */
 void GlobeViewer::render()
 {
     impl_->ioc.post( [this] {
@@ -176,6 +190,12 @@ void GlobeViewer::render()
 }
 
 
+/*!
+ * Change the view dimensions. Usually it's called every time the owner window resizes
+ * and the view needs to fill whole client area.
+ * \param[in] w New width of the view.
+ * \param[in] h New height of the view.
+ */
 void GlobeViewer::resize( int w, int h )
 {
     impl_->ioc.post( [this, w, h] {
@@ -187,6 +207,11 @@ void GlobeViewer::resize( int w, int h )
 }
 
 
+/*!
+ * Panning view around {x, y} axises.
+ * \param[in] x Offset along x axis. Positive - move to the right, negative - move to the left. 
+ * \param[in] y Offset along y axis. Positive - move up, negative - move down. 
+ */
 void GlobeViewer::move( int x, int y )
 {
     impl_->ioc.post( [this, x, y] {
@@ -198,6 +223,9 @@ void GlobeViewer::move( int x, int y )
 }
 
 
+/*!
+ * \param[in] steps Number of steps to zoom. Positive - zooming in, negative - zooming out.
+ */
 void GlobeViewer::zoom( int steps )
 {
     impl_->ioc.post( [this, steps] {
@@ -209,6 +237,9 @@ void GlobeViewer::zoom( int steps )
 }
 
 
+/*!
+ * Useful when inaccurate view panning moves the Globe off the screen.
+ */
 void GlobeViewer::centerView()
 {
     impl_->ioc.post( [this] {
@@ -220,6 +251,10 @@ void GlobeViewer::centerView()
 }
 
 
+/*!
+ * Projection center is set to [0, 0]. That means a vector going from the Globe center to [0, 0]
+ * is directed at the viewer and the one going to the North Pole is directed up.
+ */
 void GlobeViewer::baseState()
 {
     impl_->ioc.post( [this] {
@@ -231,6 +266,16 @@ void GlobeViewer::baseState()
 }
 
 
+/*!
+ * Rotation degree in each direction is based on view pixel offset (set in this method)
+ * and current Globe scale (changed in zoom method).
+ * \param[in] x Positive - rotating right, negative - rotating left.
+ * \param[in] y Positive - rotating up, negative - rotating down.
+ *
+ * Right means that if we're looking at the North Pole from above the Globe is rotating counterclockwise.
+ * Moving up or down to the extremes will never turn the Globe upside down
+ * but will fix it at the latitude limit (-90 or +90 degree).
+ */
 void GlobeViewer::rotate( int x, int y )
 {
     impl_->ioc.post( [this, x, y] {
@@ -242,6 +287,13 @@ void GlobeViewer::rotate( int x, int y )
 }
 
 
+/*!
+ * Must point at a view pixel. If that pixel is inside the Globe projection,
+ * the Globe will rotate so that new projection center is at the new point.
+ * Otherwise the point is ignored.
+ * \param[in] x Coordinate x of the pixel.
+ * \param[in] y Coordinate y of the pixel.
+ */
 void GlobeViewer::projectCenterAt( int x, int y )
 {
     impl_->ioc.post( [this, x, y] {
@@ -253,6 +305,11 @@ void GlobeViewer::projectCenterAt( int x, int y )
 }
 
 
+/*!
+ * Must choose one of the values from TileServer enumerator.
+ * \param[in] ts TileServer value.
+ * \exception std::logic_error In case of unknown value. Throw in a different thread.
+ */
 void GlobeViewer::setTileSource( TileServer ts )
 {
     impl_->ioc.post( [this, ts] {
@@ -264,6 +321,9 @@ void GlobeViewer::setTileSource( TileServer ts )
 }
 
 
+/*!
+ * \param[in] val True - turn on, false - turn off.
+ */
 void GlobeViewer::setWireFrameView( bool val )
 {
     impl_->ioc.post( [this, val] {
@@ -275,6 +335,9 @@ void GlobeViewer::setWireFrameView( bool val )
 }
 
 
+/*!
+* \param[in] val True - turn on, false - turn off.
+*/
 void GlobeViewer::setMapTilesView( bool val )
 {
     impl_->ioc.post( [this, val] {
@@ -286,6 +349,11 @@ void GlobeViewer::setMapTilesView( bool val )
 }
 
 
+/*!
+ * \warning Call this at the end of the main function if an instance of
+ * GlobeViewer is a global variable. Otherwise it will conflict with
+ * destruction of static variables used in GlobeViewer and may crash!
+ */
 void GlobeViewer::cleanup()
 {
     impl_.reset();

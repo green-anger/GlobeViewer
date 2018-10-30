@@ -8,6 +8,9 @@
 
 
 namespace gv {
+
+/*! \brief Contains supporting classes and functions not directly related to GlobeViewer
+*/
 namespace support {
 
 
