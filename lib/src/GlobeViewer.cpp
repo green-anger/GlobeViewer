@@ -1,3 +1,4 @@
+#include <atomic>
 #include <fstream>
 #include <functional>
 #include <future>
@@ -22,46 +23,64 @@
 
 using namespace boost::asio;
 
-/*! \brief Contains all classes and functions related to GlobeViewer
+
+/*!
+ * \brief Contains all classes and functions related to GlobeViewer
  */
 namespace gv
 {
 
 
+/*!
+ * \brief Implementation of GlobeViewer.
+ * 
+ * The main trick is to make all OpenGL calls in one thread, otherwise the application
+ * will not work properly or may even crash. To make it possible instance of
+ * boost::asio::io_context (ioc) is used with a single thread. This does the trick and
+ * additionally eliminates the need of synchronization between different GlobeViewer calls.
+ * Because every GlobeViewer API call just post some task to ioc object and every 
+ * such task will be undertaken consecutively and in the same thread (implicit strand
+ * in terms of Boost.Asio).
+ */
 struct GlobeViewer::Impl
 {
 public:
     Impl( std::function<void()> );
     ~Impl();
 
+    //! Initialize OpenGL.
     bool initGl() const;
+
+    //! Initialize data.
     void initData();
 
-    ///\todo make it atomic
-    bool valid;
+    std::atomic<bool> valid;                    //!< Indicator of validity of Impl initialization.
 
-    std::function<void()> makeCurrent;
+    std::function<void()> makeCurrent;          //!< Callable that makes some OpenGL context current.
 
-    std::shared_ptr<DataKeeper> dataKeeper;
-    std::shared_ptr<MapGenerator> mapGenerator;
-    std::shared_ptr<Projector> projector;
-    std::shared_ptr<Renderer> renderer;
-    std::shared_ptr<TileManager> tileManager;
-    std::shared_ptr<Viewport> viewport;
+    std::shared_ptr<DataKeeper> dataKeeper;     //!< Keeps all OpenGL relative variables.
+    std::shared_ptr<MapGenerator> mapGenerator; //!< Generates a single texture from map tiles.
+    std::shared_ptr<Projector> projector;       //!< Projects the globe to plane.
+    std::shared_ptr<Renderer> renderer;         //!< Renders all OpenGL entities.
+    std::shared_ptr<TileManager> tileManager;   //!< Downloads and caches map tiles from tile servers.
+    std::shared_ptr<Viewport> viewport;         //!< Calculates dimensions of the view.
 
-    boost::asio::io_context ioc;
-    executor_work_guard<io_context::executor_type> work;
-    std::vector<std::thread> threads;
+    boost::asio::io_context ioc;                //!< Allows implementing task queue.
+    executor_work_guard<io_context::executor_type> work;    //!< Provides work to ioc and doesn't let it stop.
+    std::vector<std::thread> threads;           //!< Vector of worker thread. To make it all work properly strictly one is needed.
 };
 
 
+/*!
+* Constructor's parameters are redirected from GlobeViewer ctor.
+* \param[in] func A callable capable of making current some OpenGL context.
+*/
 GlobeViewer::Impl::Impl( std::function<void()> func )
     : valid( false )
     , makeCurrent( func )
     , ioc()
     , work( make_work_guard( ioc ) )
 {
-    // single thread = implicit strand
     threads.emplace_back( [this]() { ioc.run(); } );
 }
 
@@ -85,6 +104,11 @@ GlobeViewer::Impl::~Impl()
 }
 
 
+/*!
+ * Cannot be called in constructor because of OpenGL calls limit -
+ * they must be in the same thread. GlobeViewer constructor posts initGl() to ioc.
+ * \return True - OpenGL successfully initialized, false - otherwise.
+ */
 bool GlobeViewer::Impl::initGl() const
 {
     makeCurrent();
@@ -92,6 +116,12 @@ bool GlobeViewer::Impl::initGl() const
 }
 
 
+/*!
+ * Every member must be initialized before proceeding. However it cannot be done
+ * in constructor because of OpenGL calls limit - they must be in the same thread.
+ * And there is no way to force user to create GlobeViewer instance in a particular
+ * thread, hence GlobeViewer constructor posts initData() to ioc.
+ */
 void GlobeViewer::Impl::initData()
 {
     dataKeeper.reset( new DataKeeper() );
@@ -170,7 +200,7 @@ GlobeViewer::~GlobeViewer()
  */
 bool GlobeViewer::validSetup() const
 {
-    return impl_ ? impl_->valid : false;
+    return impl_ ? impl_->valid.load() : false;
 }
 
 
