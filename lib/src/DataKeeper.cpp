@@ -83,6 +83,10 @@ DataKeeper::~DataKeeper()
 }
 
 
+/*!
+ * Request necessary data for calling composeWireGlobe() so that there's the Globe
+ * displayed right after start.
+ */
 void DataKeeper::init()
 {
     auto optUnitInMeter = getUnitInMeter();
@@ -119,6 +123,11 @@ void DataKeeper::init()
 }
 
 
+/*!
+ * Implements GlobeViewer::rotate.
+ * \param[in] x Positive - rotating right, negative - rotating left.
+ * \param[in] y Positive - rotating up, negative - rotating down.
+ */
 void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 {
     Profiler prof( "DataKeeper::rotateGlobe" );
@@ -186,6 +195,9 @@ void DataKeeper::rotateGlobe( int pixelX, int pixelY )
 }
 
 
+/*!
+ * Implements GlobeViewer::baseState.
+ */
 void DataKeeper::balanceGlobe()
 {
     projector_->setProjectionAt( 0.0, 0.0 );
@@ -194,6 +206,11 @@ void DataKeeper::balanceGlobe()
 }
 
 
+/*!
+ * Implements GlobeViewer::projectCenterAt.
+ * \param[in] x Coordinate x of the pixel.
+ * \param[in] y Coordinate y of the pixel.
+ */
 void DataKeeper::centerAt( int x, int y )
 {
     double metX;
@@ -211,6 +228,12 @@ void DataKeeper::centerAt( int x, int y )
 }
 
 
+/*!
+ * \param[in] vecVbo Vertices to fill vertex buffer object for map tiles.
+ * \param[in] w Texture width.
+ * \param[in] h Texture height.
+ * \param[in] vecData Texture data in memory.
+ */
 void DataKeeper::updateTexture( std::vector<GLfloat> vecVbo, int w, int h, std::vector<unsigned char> vecData )
 {
     glBindTexture( GL_TEXTURE_2D, texMap_ );
@@ -226,11 +249,22 @@ void DataKeeper::updateTexture( std::vector<GLfloat> vecVbo, int w, int h, std::
 }
 
 
+/*!
+ * \return Pair of values \n
+ * (0) Vertex array object for Simple Triangle. \n
+ * (1) Number of vertices for Simple Triangle.
+ */
 std::tuple<GLuint, GLsizei> DataKeeper::simpleTriangle() const
 {
     return std::make_tuple( vaoST_, numST_ );
 }
 
+
+/*!
+ * \return Pair of values \n
+ * (0) Vertex array object for wire-frame model of the Globe. \n
+ * (1) Number of vertices for wire-frame model of the Globe.
+ */
 
 std::tuple<GLuint, GLsizei> DataKeeper::wireGlobe() const
 {
@@ -238,12 +272,24 @@ std::tuple<GLuint, GLsizei> DataKeeper::wireGlobe() const
 }
 
 
+/*!
+ * \return Pair of values \n
+ * (0) Vertex array object for map tiles. \n
+ * (1) Number of vertices for map tiles.
+ */
 std::tuple<GLuint, GLuint, GLsizei> DataKeeper::mapTiles() const
 {
     return std::make_tuple( vaoMap_, texMap_, numMap_ );
 }
 
 
+/*!
+ * Requires direct access to Projector via pointer to speed up calculations.
+ * To compose the whole globe one time it often requires to project around 20k
+ * points. Multiply it by 30 - 60 frames to get projections in second
+ * and you've got yourself a bottleneck. If the access to Projector is not direct,
+ * for instance, via Boost.Signal2, performance becomes unacceptable.
+ */
 void DataKeeper::composeWireGlobe()
 {
     Profiler prof( "DataKeeper::composeWireGlobe" );
