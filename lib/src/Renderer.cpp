@@ -37,6 +37,11 @@ Renderer::~Renderer()
 }
 
 
+
+
+/*!
+ * Implements GlobeViewer::render.
+ */
 void Renderer::render()
 {
     glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
@@ -126,18 +131,31 @@ void Renderer::render()
 }
 
 
+/*!
+ * \param[in] val True - ready, false - not ready.
+ */
 void Renderer::setMapReady( bool val )
 {
     mapReady_ = val;
 }
 
 
+
+/*!
+ * Implements GlobeViewer::setWireFrameView.
+ * \param[in] val True - turn on, false - turn off.
+ */
 void Renderer::setDrawWires( bool val )
 {
     drawWires_ = val;
 }
 
 
+
+/*!
+* Implements GlobeViewer::setMapTilesView.
+* \param[in] val True - turn on, false - turn off.
+*/
 void Renderer::setDrawMap( bool val )
 {
     drawMap_ = val;
