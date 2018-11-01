@@ -26,6 +26,10 @@ Projector::~Projector()
 }
 
 
+/*!
+ * \param[in] lon Longitude.
+ * \param[in] lat Latitude.
+ */
 void Projector::setProjectionAt( double lon, double lat )
 {
     std::lock_guard<std::mutex> lock( mutex_ );
@@ -50,6 +54,15 @@ void Projector::setProjectionAt( double lon, double lat )
 }
 
 
+/*!
+ * \param[in] lon Longitude.
+ * \param[in] lat Latitude.
+ * \param[out] x Projected meters along axis x.
+ * \param[out] y Projected meters along axis y.
+ * \return
+ * True - projecting succeeded.\n
+ * False - projecting failed.
+ */
 bool Projector::projectFwd( double lon, double lat, double& x, double& y ) const
 {
     PJ_COORD res;
@@ -65,6 +78,14 @@ bool Projector::projectFwd( double lon, double lat, double& x, double& y ) const
 }
 
 
+/*!
+ * \param[in] lon Longitude.
+ * \param[in] lat Latitude.
+ * \return Tuple:\n
+ * (0) Result (true - projecting succeeded, false - projecting failed). \n
+ * (1) Projected meters along axis x. \n
+ * (2) Projected meters along axis y.
+ */
 std::tuple<bool, double, double> Projector::projectFwd( double lon, double lat ) const
 {
     double x;
@@ -74,6 +95,15 @@ std::tuple<bool, double, double> Projector::projectFwd( double lon, double lat )
 }
 
 
+/*!
+ * \param[in] x Projected meters along axis x.
+ * \param[in] y Projected meters along axis y.
+ * \param[out] lon Longitude.
+ * \param[out] lat Latitude.
+ * \return
+ * True - projecting succeeded.\n
+ * False - projecting failed.
+ */
 bool Projector::projectInv( double x, double y, double& lon, double& lat ) const
 {
     PJ_COORD res;
@@ -89,6 +119,14 @@ bool Projector::projectInv( double x, double y, double& lon, double& lat ) const
 }
 
 
+/*!
+ * \param[in] x Projected meters along axis x.
+ * \param[in] y Projected meters along axis y.
+ * \return
+ * (0) Result (true - projecting succeeded, false - projecting failed). \n
+ * (1) Longitude. \n
+ * (2) Latitude.
+ */
 std::tuple<bool, double, double> Projector::projectInv( double x, double y ) const
 {
     double lon;
@@ -98,6 +136,10 @@ std::tuple<bool, double, double> Projector::projectInv( double x, double y ) con
 }
 
 
+/*!
+ * \param[out] lon Longitude.
+ * \param[out] lat Latitude.
+ */
 void Projector::projectionCenter( double& lon, double& lat ) const
 {
     std::lock_guard<std::mutex> lock( mutex_ );
@@ -106,6 +148,11 @@ void Projector::projectionCenter( double& lon, double& lat ) const
 }
 
 
+/*!
+ * \return
+ * (0) Longitude. \n
+ * (1) Latitude.
+ */
 std::tuple<double, double> Projector::projectionCenter() const
 {
     std::lock_guard<std::mutex> lock( mutex_ );
