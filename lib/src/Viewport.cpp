@@ -56,6 +56,11 @@ Viewport::~Viewport()
 }
 
 
+/*!
+ * Implements GlobeViewer::resize.
+ * \param[in] w New width of the view.
+ * \param[in] h New height of the view.
+ */
 void Viewport::resize( int w, int h )
 {
     pixelW_ = w;
@@ -71,6 +76,11 @@ void Viewport::resize( int w, int h )
 }
 
 
+/*!
+ * Implements GlobeViewer::move.
+ * \param[in] x Offset along x axis. Positive - move to the right, negative - move to the left. 
+ * \param[in] y Offset along y axis. Positive - move up, negative - move down. 
+ */
 void Viewport::move( int x, int y )
 {
     panX_ -= unitInPixel_ * x;
@@ -79,6 +89,10 @@ void Viewport::move( int x, int y )
 }
 
 
+/*!
+ * Implements GlobeViewer::zoom.
+ * \param[in] steps Number of steps to zoom. Positive - zooming in, negative - zooming out.
+ */
 void Viewport::zoom( int steps )
 {
     const auto prevUnitInPixel = unitInPixel_;
@@ -123,6 +137,9 @@ void Viewport::zoom( int steps )
 }
 
 
+/*!
+ * Implements GlobeViewer::centerView.
+ */
 void Viewport::center()
 {
     panX_ = panY_ = 0;
@@ -130,6 +147,11 @@ void Viewport::center()
 }
 
 
+/*!
+ * It's called once in application initialization and then
+ * on every dispatching of viewUpdated signal.
+ * \return ViewData instance.
+ */
 ViewData Viewport::viewData() const
 {
     ViewData vd;
@@ -146,24 +168,40 @@ ViewData Viewport::viewData() const
 }
 
 
+/*!
+ * \return current value of unitInMeter_.
+ */
 float Viewport::unitInMeter() const
 {
     return unitInMeter_;
 }
 
 
+/*!
+ * \return current value of meterInPixel_.
+ */
 float Viewport::meterInPixel() const
 {
     return meterInPixel_;
 }
 
 
+/*!
+ * \return current value of proj_.
+ */
 glm::mat4 Viewport::projection() const
 {
     return proj_;
 }
 
 
+/*!
+ * \param[in] x Coordinate x of a pixel.
+ * \param[in] y Coordinate y of a pixel.
+ * \return Tuple:\n
+ * (0) Meters along axis x. \n
+ * (1) Meters along axis y.
+ */
 std::tuple<double, double> Viewport::metersAtPixel( int x, int y ) const
 {
     double metX = ( unitX_ + panX_ + x * unitInPixel_ ) / unitInMeter_;
@@ -172,6 +210,9 @@ std::tuple<double, double> Viewport::metersAtPixel( int x, int y ) const
 }
 
 
+/*!
+ * Uses glm::lookAt and glm::ortho.
+ */
 void Viewport::setProjection()
 {
     static const glm::mat4 view = glm::lookAt(
@@ -188,6 +229,12 @@ void Viewport::setProjection()
 }
 
 
+/*!
+ * Result depends strictly on current zoom level, moving or panning will not
+ * affect return value.
+ * \param[in] tileWidth Map tile width in pixels.
+ * \return Map zoom level.
+ */
 int Viewport::mapZoomLevel( int tileWidth ) const
 {
     // 2 * earthRadius - length of projected "front side" of the Earth
