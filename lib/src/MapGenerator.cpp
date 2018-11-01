@@ -47,6 +47,9 @@ MapGenerator::~MapGenerator()
 }
 
 
+/*!
+ * \param[in] vd Initial viewport data.
+ */
 void MapGenerator::init( ViewData vd )
 {
     if ( !getProjector() )
@@ -65,6 +68,9 @@ void MapGenerator::init( ViewData vd )
 }
 
 
+/*!
+ * The Globe was rotated, hence map texture must be turned off as it became irrelevant.
+ */
 void MapGenerator::updateGlobe()
 {
     mapReady( false );
@@ -72,6 +78,11 @@ void MapGenerator::updateGlobe()
 }
 
 
+/*!
+ * The viewport was updated, however map texture may stat turned on as it's still
+ * relevant but can contain some gaps until it's been updated.
+ * \param[in] vd New viewport data.
+ */
 void MapGenerator::updateViewData( ViewData vd )
 {
     newViewData_ = vd;
@@ -79,6 +90,11 @@ void MapGenerator::updateViewData( ViewData vd )
 }
 
 
+/*!
+ * Implements GlobeViewer::setTileSource.
+ * \param[in] ts TileServer value.
+ * \exception std::logic_error In case of unknown value.
+ */
 void MapGenerator::updateTileServer( TileServer ts )
 {
     newTileServerType_ = ts;
@@ -86,6 +102,11 @@ void MapGenerator::updateTileServer( TileServer ts )
 }
 
 
+/*!
+ * In the end report that map tiles are ready and calls finalize.
+ * \param[in] vec Vector of TileImage containing header and bytes (data) for each
+ * requested tile. Some or all tiles may be empty (data.size() == 0).
+ */
 void MapGenerator::getTiles( const std::vector<TileImage>& vec )
 {
     data_.clear();
@@ -144,6 +165,10 @@ void MapGenerator::getTiles( const std::vector<TileImage>& vec )
 }
 
 
+/*!
+ * If there's already an active request, mark pending_ true and exit.
+ * Otherwise start generating new map texture.
+ */
 void MapGenerator::checkStates()
 {
     std::lock_guard<std::mutex> lock( mutexState_ );
@@ -161,6 +186,10 @@ void MapGenerator::checkStates()
 }
 
 
+/*!
+ * If there's a pending request, mark pending_ false and start generating
+ * new map texture. Otherwise send results and mark active_ false.
+ */
 void MapGenerator::cleanupCheck()
 {
     std::lock_guard<std::mutex> lock( mutexState_ );
@@ -180,6 +209,10 @@ void MapGenerator::cleanupCheck()
 }
 
 
+/*!
+ * Generates new map texture only for visible Globe as follows,
+ * find all tiles to be processed and push them further to composeTileTexture.
+ */
 void MapGenerator::regenerateMap()
 {
     Profiler prof( "MapGenerator::regenerateMap" );
@@ -206,12 +239,22 @@ void MapGenerator::regenerateMap()
 }
 
 
+/*!
+ * \param[in] lon Longitude.
+ * \param[in] z Map zoom level.
+ * \return Tile coordinate x.
+ */
 int MapGenerator::lonToTileX( double lon, int z ) const
 {
     return static_cast<int>( std::floor( ( lon + 180.0 ) / 360.0 * std::pow( 2.0, z ) ) );
 }
 
 
+/*!
+ * \param[in] lat Latitude.
+ * \param[in] z Map zoom level.
+ * \return Tile coordinate y.
+ */
 int MapGenerator::latToTileY( double lat, int z ) const
 {
     return static_cast<int>(
@@ -220,12 +263,22 @@ int MapGenerator::latToTileY( double lat, int z ) const
 }
 
 
+/*!
+ * \param[in] x Tile coordinate x.
+ * \param[in] z Map zoom level.
+ * \return Longitude.
+ */
 double MapGenerator::tileXToLon( int x, int z ) const
 {
     return x / pow( 2.0, z ) * 360.0 - 180;
 }
 
 
+/*!
+ * \param[in] y Tile coordinate y.
+ * \param[in] z Map zoom level.
+ * \return Latitude.
+ */
 double MapGenerator::tileYToLat( int y, int z ) const
 {
     double n = pi - 2.0 * pi * y / std::pow( 2.0, z );
@@ -233,6 +286,11 @@ double MapGenerator::tileYToLat( int y, int z ) const
 }
 
 
+/*!
+ * \param[in] lon Longitude.
+ * \param[in] lat Latitude.
+ * \return True - point is visible, false - point is not visible.
+ */
 bool MapGenerator::visiblePoint( double& lon, double& lat )
 {
     Profiler prof( "MapGenerator::visiblePoint" );
@@ -307,6 +365,12 @@ bool MapGenerator::visiblePoint( double& lon, double& lat )
 }
 
 
+/*!
+ * \param[in] z Map zoom level.
+ * \param[in] x Tile coordinate x.
+ * \param[in] y Tile coordinate y.
+ * \return Vector of tile headers.
+ */
 std::vector<TileHead> MapGenerator::findTilesToProcess( int z, int x, int y )
 {
     Profiler prof( "MapGenerator::findTilesToProcess" );
@@ -365,6 +429,10 @@ std::vector<TileHead> MapGenerator::findTilesToProcess( int z, int x, int y )
 }
 
 
+/*!
+ * \param[in] th Tile header.
+ * \return True - tile is visible, false - tile is not visible.
+ */
 bool MapGenerator::tileVisible( TileHead th )
 {
     Profiler prof( "MapGenerator::tileVisible" );
@@ -409,6 +477,10 @@ bool MapGenerator::tileVisible( TileHead th )
 }
 
 
+/*!
+ * After processing requests tiles from the system and calls vboFromTileTexture.
+ * \param[in] vec Vector of tile headers.
+ */
 void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
 {
     Profiler prof( "MapGenerator::composeTileTexture" );
@@ -456,6 +528,10 @@ void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
 }
 
 
+/*!
+ * In the end report that vertex buffer object is ready and calls finalize.
+ * \param[in] tt Texture meta data.
+ */
 void MapGenerator::vboFromTileTexture( TileTexture tt )
 {
     static const int chunks = 10;
@@ -541,6 +617,10 @@ void MapGenerator::vboFromTileTexture( TileTexture tt )
 }
 
 
+/*!
+ * If map tiles and vertex buffer object are ready sets their
+ * respective indicators to false and calls cleanupCheck.
+ */
 void MapGenerator::finalize()
 {
     if ( gotTiles_.load() && calcedVbo_.load() )
