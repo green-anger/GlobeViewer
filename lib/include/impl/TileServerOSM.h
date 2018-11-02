@@ -9,6 +9,12 @@
 namespace gv {
 
 
+/*!
+ * \brief Implements OpenStreetMap tile server.
+ *
+ * For documentation for overridden virtual private methods
+ * look in the base class TileServerBase.
+ */
 class TileServerOSM : public TileServerBase
 {
 public:
@@ -21,12 +27,12 @@ private:
     virtual std::string getNextMirror() override;
     virtual std::string getTileTarget( int z, int x, int y ) const override;
 
-    const std::string name_;
-    const std::string domain_;
-    const std::string port_;
-    const std::array<std::string, 3> subDomain_;
-    std::mutex mutex_;
-    unsigned int curSub_;
+    const std::string name_;                        //!< Server name.
+    const std::string domain_;                      //!< Server address.
+    const std::string port_;                        //!< Server port.
+    const std::array<std::string, 3> subDomain_;    //!< Server subdomains.
+    std::mutex mutex_;                              //!< Allows to synchronize mirror cycling.
+    unsigned int curSub_;                           //!< Current subdomain.
 };
 
 

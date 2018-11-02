@@ -10,6 +10,10 @@
 namespace gv {
 
 
+/*!
+ * \param[in] ts Tile server identifier.
+ * \return Pointer to concrete tile server.
+ */
 std::unique_ptr<TileServerBase> TileServerFactory::createTileServer( TileServer ts )
 {
     switch ( ts )

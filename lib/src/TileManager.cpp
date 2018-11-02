@@ -22,16 +22,34 @@ namespace http = boost::beast::http;
 using namespace boost::filesystem;
 using TSP = alt::ThreadSafePrinter<alt::MarkPolicy>;
 
+
 namespace {
 
 
+//! Name of the directory holding all cached tile images from all tile servers.
 const std::string cache = "cache";
 
+
+/*!
+ * \brief Compose directory name for a tile with a prefix.
+ *
+ * \param[in] head Tile header.
+ * \param[in] name Prefix (tile server name).
+ * \return Directory name.
+ */
 std::string tileDir( const gv::TileHead& head, const std::string& name )
 {
     return cache + "/" + name + "/" + std::to_string( head.z ) + "/" + std::to_string( head.x ) + "/";
 }
 
+
+/*!
+* \brief Compose file name for a tile with a prefix.
+*
+* \param[in] head Tile header.
+* \param[in] name Prefix (tile server name).
+* \return File name.
+*/
 std::string tileFile( const gv::TileHead& head, const std::string& name )
 {
     return tileDir( head, name ) + std::to_string( head.y ) + ".png";
@@ -44,41 +62,67 @@ std::string tileFile( const gv::TileHead& head, const std::string& name )
 namespace gv {
 
 
+/*!
+ * \brief Fetch a single tile image either from cache or tile server.
+ *
+ * Session is made friend with TileManager so it can have access to
+ * resulting container and the promise it must set if it fetch the
+ * last requested tile. It has a timeout for cases when tile server
+ * is not responsive. In this case a tile will not be fetched and
+ * an empty image (zero bytes) will return.
+ */
 class TileManager::Session : public std::enable_shared_from_this<TileManager::Session>
 {
 public:
     explicit Session( TileManager*, const TileHead&, int msecTimeout );
     ~Session();
 
+    //! Start the session.
     void start();
 
 private:
+    //! Stop the session.
     void stop();
+
+    //! Error report during session lifetime.
     void error( boost::system::error_code, const std::string& );
+
+    //! Fetch an image from the tile server.
     void get( const std::string& host, const std::string& port );
+
+    //! Timeout occurred.
     void onTimeout();
+
+    //! Tile server address resolved.
     void onResolve( boost::system::error_code, tcp::resolver::results_type );
+
+    //! Connected to the tile server.
     void onConnect( boost::system::error_code );
+
+    //! Request to the tile server sent.
     void onWrite( boost::system::error_code, std::size_t );
+
+    //! Response from the tile server received.
     void onRead( boost::system::error_code, std::size_t );
 
+    //! Check if this was the last of the requested tiles.
     void checkRemains();
 
-    TileManager* tm_;
-    TileHead tileHead_;
-    std::string mirror_;
+    TileManager* tm_;                               //!< Pointer to the owner TileManager instance.
+    TileHead tileHead_;                             //!< Tile header of the tile to fetch.
+    std::string mirror_;                            //!< Address of one of the tile server mirrors.
 
-    steady_timer timer_;
-    tcp::resolver resolver_;
-    tcp::socket socket_;
-    boost::beast::flat_buffer buffer_;
-    http::request<http::empty_body> request_;
-    http::response<http::string_body> response_;
+    steady_timer timer_;                            //!< Timer to detect timeout.
+    tcp::resolver resolver_;                        //!< Boost.Asio resolver.
+    tcp::socket socket_;                            //!< Boost.Asio socket.
+    boost::beast::flat_buffer buffer_;              //!< Boost.Beast buffer.
+    http::request<http::empty_body> request_;       //!< Boost.Beast request container.
+    http::response<http::string_body> response_;    //!< Boost.Beast response container.
 
-    std::chrono::time_point<std::chrono::steady_clock> start_;
-    int tries_;
-    const int msecTimeout_;
-    std::atomic<bool> connected_;
+    std::chrono::time_point<std::chrono::steady_clock> start_;  //!< Time of the session start.
+    int tries_;                                     //!< Number of tries to fetch the tile image.
+    const int msecTimeout_;                         //!< Timeout time.
+    std::atomic<bool> connected_;                   //!< Indicator of session managing to connect to the tile server.
 };
 
 
@@ -88,6 +132,9 @@ private:
 namespace gv {
 
 
+/*!
+ * By default OpenStreetMap tile server is used.
+ */
 TileManager::TileManager()
     : ioc_()
     , work_( make_work_guard( ioc_ ) )
@@ -120,6 +167,15 @@ TileManager::~TileManager()
 }
 
 
+/*!
+ * First of all state check happens in the manner of how MapGenerator does it.
+ * If request to be proceeded, first to be placed in task queue is the function
+ * waiting for the promiseReady_ to be set, and the for every requested tile
+ * there is a Session put in queue.
+ *
+ * \param[in] vec Tile headers.
+ * \param[in] ts Tile server identifier.
+ */
 void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts )
 {
     TSP() << "Request for " << vec.size() << " tiles";
@@ -199,6 +255,9 @@ void TileManager::requestTiles( const std::vector<TileHead>& vec, TileServer ts 
 }
 
 
+/*!
+ * \param[in] head Tile header.
+ */
 void TileManager::prepareDir( const TileHead& head )
 {
     create_directories( tileDir( head, tileServer_->serverName() ) );
@@ -211,6 +270,11 @@ void TileManager::prepareDir( const TileHead& head )
 namespace gv {
 
 
+/*!
+ * \param[in] tm Pointer to the owner TileManager instance.
+ * \param[in] head Tile header.
+ * \param[in] msecTimeout Timeout time.
+ */
 TileManager::Session::Session( TileManager* tm, const TileHead& head, int msecTimeout )
     : tm_( tm )
     , tileHead_( head )
@@ -231,6 +295,10 @@ TileManager::Session::~Session()
 }
 
 
+/*!
+ * First the cache is checked. If the tile image exists it's immediately
+ * returned and the session will automatically end.
+ */
 void TileManager::Session::start()
 {
     const auto tilePath = tileFile( tileHead_, tm_->tileServer_->serverName() );
@@ -256,6 +324,10 @@ void TileManager::Session::start()
 }
 
 
+/*!
+ * \param[in] host Tile server mirro ip address.
+ * \param[in] port Tile server mirro port.
+ */
 void TileManager::Session::get( const std::string& host, const std::string& port )
 {
     start_ = std::chrono::steady_clock::now();
@@ -272,6 +344,10 @@ void TileManager::Session::get( const std::string& host, const std::string& port
 }
 
 
+/*!
+ * This is always invoked. It checks if there's a connection to the tile
+ * server. If there's none the session is forced to stop.
+ */
 void TileManager::Session::onTimeout()
 {
     if ( !connected_ )
@@ -281,6 +357,9 @@ void TileManager::Session::onTimeout()
 }
 
 
+/*!
+ * Gracefully close the socket if it's been opened.
+ */
 void TileManager::Session::stop()
 {
     if ( socket_.is_open() )
@@ -304,6 +383,12 @@ void TileManager::Session::stop()
 }
 
 
+/*!
+ * For some errors try to start the session again if tries are left.
+ *
+ * \param[in] ec System error code.
+ * \param[in] msg Output message.
+ */
 void TileManager::Session::error( boost::system::error_code ec, const std::string& msg )
 {
     TSP() << msg << ": " << ec.message() << "\n";
@@ -315,6 +400,10 @@ void TileManager::Session::error( boost::system::error_code ec, const std::strin
 }
 
 
+/*!
+* \param[in] ec System error code.
+* \param[in] results Boost.Asio resolver results type.
+*/
 void TileManager::Session::onResolve( boost::system::error_code ec, tcp::resolver::results_type results )
 {
     if ( ec )
@@ -330,6 +419,9 @@ void TileManager::Session::onResolve( boost::system::error_code ec, tcp::resolve
 }
 
 
+/*!
+* \param[in] ec System error code.
+*/
 void TileManager::Session::onConnect( boost::system::error_code ec )
 {
     if ( ec )
@@ -345,6 +437,10 @@ void TileManager::Session::onConnect( boost::system::error_code ec )
 }
 
 
+/*!
+* \param[in] ec System error code.
+* \param[in] __ Not used.
+*/
 void TileManager::Session::onWrite( boost::system::error_code ec, std::size_t )
 {
     if ( ec )
@@ -358,6 +454,10 @@ void TileManager::Session::onWrite( boost::system::error_code ec, std::size_t )
 }
 
 
+/*!
+* \param[in] ec System error code.
+* \param[in] bytes_transferred Not used.
+*/
 void TileManager::Session::onRead( boost::system::error_code ec, std::size_t bytes_transferred )
 {
     if ( ec )
@@ -404,6 +504,9 @@ void TileManager::Session::onRead( boost::system::error_code ec, std::size_t byt
 }
 
 
+/*!
+ * Checks TileManager::remains_ and if it equals zero sets TileManager::promiseReady_.
+ */
 void TileManager::Session::checkRemains()
 {
     if ( --tm_->remains_ == 0 )
