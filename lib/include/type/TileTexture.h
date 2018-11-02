@@ -10,21 +10,29 @@
 namespace gv {
 
 
+/*!
+ * \brief Holds meta data of map texture.
+ *
+ * It has everything that need to build a map texture except for
+ * image data (bytes), hence it's meta data.
+ */
 struct TileTexture
 {
-    std::tuple<int, int> textureSize;   //!< (rows, cols) of tile texture in tile numbers
-    int tileCount;                      //!< total number of tiles
-    int tileFilled;                     //!< number of tiles with TileData filled (got its image)
-    TileMap tiles;                      //!< tiles themselves
+    std::tuple<int, int> textureSize;   //!< Dimensions (rows, columns) of map texture.
+    int tileCount;                      //!< Total number of tiles.
+    TileMap tiles;                      //!< Tiles meta data.
 
-    TileTexture() : textureSize( { 0, 0 } ), tileCount( 0 ), tileFilled( 0 ), tiles( {} ) {}
+    //! Default constructor.
+    TileTexture() : textureSize( { 0, 0 } ), tileCount( 0 ), tiles( {} ) {}
+   
+    //! Default copy constructor.
     TileTexture( const TileTexture& ) = default;
 
+    //! Standard copy assignment operator.
     TileTexture& operator=( const TileTexture& rhs )
     {
         textureSize = rhs.textureSize;
         tileCount = rhs.tileCount;
-        tileFilled = rhs.tileFilled;
         tiles = rhs.tiles;
         return *this;
     }

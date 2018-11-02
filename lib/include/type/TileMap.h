@@ -7,6 +7,7 @@
 
 namespace gv {
 
+//! Maps tile header to tile body.
 using TileMap = std::unordered_map<TileHead, TileBody>;
 
 }

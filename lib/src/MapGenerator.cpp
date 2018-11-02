@@ -486,7 +486,6 @@ void MapGenerator::composeTileTexture( const std::vector<TileHead>& vec )
     Profiler prof( "MapGenerator::composeTileTexture" );
 
     tileTex_.tileCount = vec.size();
-    tileTex_.tileFilled = 0;
     const int numX = static_cast<int>( std::ceil( std::sqrt( tileTex_.tileCount ) ) );
     const int numY = static_cast<int>( std::ceil( static_cast<double>( tileTex_.tileCount ) / numX ) );
     const int sideX = numX * defs::tileSide;
