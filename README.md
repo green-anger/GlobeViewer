@@ -16,8 +16,6 @@ You can find corresponding example [next door](./examples/glfw).
 If you have build [the library](./lib) (and all its dependencies in case of static build), you can easily use it in your project by adding single header [GlobeViewer.h](/lib/include/GlobeViewer.h).
 And that's it. Just call API methods from your application.
 
-Note: _currently the library is poorly documented (if at all), please see provided example to grasp the subject_.
-
 ## Provided example controls
 
 [GLFW example](./examples/glfw) has the following controls:
@@ -41,6 +39,15 @@ Note: _currently the library is poorly documented (if at all), please see provid
 ![Melbourne from far away](./doc/images/melbourne_far.png "Melbourne from far away")
 ![Melbourne from not so far away](./doc/images/melbourne_mid.png "Melbourne from not so far away")
 ![Melbourne at zoom level 19](./doc/images/melbourne_close.png "Melbourne at zoom level 19")
+
+## Documentation
+
+Library is fully documented with [Doxygen](http://www.doxygen.org/). Docs can be easily generated from provided [Doxyfile](./doc/Doxyfile):
+if you have Doxygen installed go to [doc directory](./doc) and call 'doxygen' without parameters. If you don't have [Graphviz](https://graphviz.org/)
+installed in [Doxyfile](./doc/Doxyfile) make sure HAVE_DOT is set to NO:
+`HAVE_DOT               = NO`
+Or just comment it out as 'NO' is a default value:
+`#HAVE_DOT               = YES`
 
 ## Dependencies
 
@@ -68,6 +75,10 @@ Library
 GLFW example:
 * [GLFW](https://www.glfw.org/)
 
-## LICENSE
+## Versioning
+
+GlobeViewer uses [Semantic Versioning 2.0.0](https://semver.org/).
+
+## License
 
 GlobeViewer is licensed under [MIT License](./LICENSE).
