@@ -62,7 +62,7 @@ public:
     boost::signals2::signal<void( std::vector<TileHead>, TileServer )> requestTiles;
     
     //! Signal that map is not ready for rendering.
-    boost::signals2::signal<void( bool )> mapReady;
+    boost::signals2::signal<void()> mapNotReady;
 
     //! Send new texture data.
     boost::signals2::signal<void( std::vector<GLfloat> /*vbo*/, int /*texW*/, int /*texH*/,

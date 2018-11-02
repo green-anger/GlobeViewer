@@ -245,7 +245,7 @@ void DataKeeper::updateTexture( std::vector<GLfloat> vecVbo, int w, int h, std::
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
     numMap_ = vecVbo.size() / 4;
 
-    mapReady( true );
+    mapReady();
 }
 
 

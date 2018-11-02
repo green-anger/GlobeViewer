@@ -68,7 +68,7 @@ public:
     boost::signals2::signal<void()> globeRotated;
     
     //! Signal that map is ready for rendering.
-    boost::signals2::signal<void( bool )> mapReady;
+    boost::signals2::signal<void()> mapReady;
 
 private:
     //! Calculate circles of latitude and meridians.

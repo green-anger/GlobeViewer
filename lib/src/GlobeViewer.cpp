@@ -138,7 +138,7 @@ void GlobeViewer::Impl::initData()
     dataKeeper->getMetersAtPixel.connect( std::bind( &Viewport::metersAtPixel, viewport, ph::_1, ph::_2 ) );
     dataKeeper->getProjector.connect( [this]() -> auto { return projector; } );
     dataKeeper->globeRotated.connect( std::bind( &MapGenerator::updateGlobe, mapGenerator ) );
-    dataKeeper->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, ph::_1 ) );
+    dataKeeper->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, true ) );
 
     viewport->viewUpdated.connect( std::bind( &MapGenerator::updateViewData, mapGenerator, ph::_1 ) );
 
@@ -149,7 +149,7 @@ void GlobeViewer::Impl::initData()
 
     mapGenerator->getProjector.connect( [this]() -> auto { return projector; } );
     mapGenerator->requestTiles.connect( std::bind( &TileManager::requestTiles, tileManager, ph::_1, ph::_2 ) );
-    mapGenerator->mapReady.connect( std::bind( &Renderer::setMapReady, renderer, ph::_1 ) );
+    mapGenerator->mapNotReady.connect( std::bind( &Renderer::setMapReady, renderer, false ) );
     mapGenerator->updateMapTexture.connect( [this]( std::vector<GLfloat> vbo, int w, int h, std::vector<unsigned char> data )
     {
         ioc.post( [vbo, w, h, data, this]

@@ -73,7 +73,7 @@ void MapGenerator::init( ViewData vd )
  */
 void MapGenerator::updateGlobe()
 {
-    mapReady( false );
+    mapNotReady();
     checkStates();
 }
 
