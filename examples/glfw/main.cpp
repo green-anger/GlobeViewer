@@ -22,9 +22,14 @@ std::tuple<GLFWwindow*, int, int> setupWindow( const std::string& title );
 std::unique_ptr<gv::GlobeViewer> globeViewer;
 bool drag = false;
 bool shift = false;
+bool fullscreen = false;
 bool firstClick = true;
 double lastX;
 double lastY;
+int lastPosX;
+int lastPosY;
+int lastWidth;
+int lastHeight;
 gv::TileServer tileServer = gv::TileServer::OSM;
 bool drawWireFrameView = true;
 bool drawMapTilesView = true;
@@ -185,6 +190,23 @@ void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mod
         drawMapTilesView = !drawMapTilesView;
 
         globeViewer->setMapTilesView( drawMapTilesView );
+    }
+    else if ( GLFW_KEY_F11 == key && GLFW_PRESS == action )
+    {
+        if ( !fullscreen )
+        {
+            glfwGetWindowSize( window, &lastWidth, &lastHeight );
+            glfwGetWindowPos( window, &lastPosX, &lastPosY );
+            auto monitor = glfwGetPrimaryMonitor();
+            auto mode = glfwGetVideoMode( monitor );
+            glfwSetWindowMonitor( window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate );
+        }
+        else
+        {
+            glfwSetWindowMonitor( window, nullptr, lastPosX, lastPosY, lastWidth, lastHeight, GLFW_DONT_CARE );
+        }
+
+        fullscreen = !fullscreen;
     }
 
     if ( !drag )
