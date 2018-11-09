@@ -15,13 +15,13 @@ const float Viewport::maxLen_ = defs::earthRadius * 2 * 3.5f;
 const float Viewport::minUnitInPixel_ = minLen_ / 1920 /*pixels*/ * unitInMeter_;
 const float Viewport::maxUnitInPixel_ = maxLen_ / 1080 /*pixels*/ * unitInMeter_;
 const std::map<float, float> Viewport::zoomMap_ = {
-    { unitInMeter_ * 0.2, 0.02 * unitInMeter_ },
-    { unitInMeter_ * 0.5, 0.05 * unitInMeter_ },
-    { unitInMeter_ * 1.0, 0.1 * unitInMeter_ },
-    { unitInMeter_ * 10.0, 0.2 * unitInMeter_ },
-    { unitInMeter_ * 50.0, 0.5 * unitInMeter_ },
-    { unitInMeter_ * 100.0, 1 * unitInMeter_ },
-    { unitInMeter_ * 500.0, 10 * unitInMeter_ },
+    { unitInMeter_ * 0.2, 0.05 * unitInMeter_ },
+    { unitInMeter_ * 0.5, 0.1 * unitInMeter_ },
+    { unitInMeter_ * 1.0, 0.2 * unitInMeter_ },
+    { unitInMeter_ * 10.0, 0.5 * unitInMeter_ },
+    { unitInMeter_ * 50.0, 2.0 * unitInMeter_ },
+    { unitInMeter_ * 100.0, 5 * unitInMeter_ },
+    { unitInMeter_ * 500.0, 20 * unitInMeter_ },
     { unitInMeter_ * 1000.0, 50 * unitInMeter_ },
     { unitInMeter_ * 2500.0, 125 * unitInMeter_ },
     { unitInMeter_ * 5000.0, 250 * unitInMeter_ },
