@@ -31,6 +31,12 @@ And that's it. Just call API methods from your application.
 * Press key '2' to toggle display of map tiles
 * Press Escape to exit
 
+## Highlights
+
+Here is a short video that can give you the first impression of what the application is capable of:
+
+[![Vimeo link](https://i.vimeocdn.com/video/738268192_1280x720.jpg)](https://vimeo.com/300014880)
+
 ## Screenshots
 
 ![The Globe](./doc/images/globe.png "The Globe")
